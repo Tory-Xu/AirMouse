@@ -1,5 +1,5 @@
 {
-    "current": "抖音",
+    "current": "Default",
     "profiles": {
         "Default": {
             "stick_left": "scroll_rev",
@@ -15,9 +15,9 @@
             "btn_14": "key_left",
             "btn_15": "key_right",
             "btn_0": "key_space",
-            "btn_9": "key_ctrl+key_tab",
+            "btn_9": "key_alt+key_q",
             "btn_6": "key_ctrl",
-            "btn_8": "key_alt+key_tab",
+            "btn_8": "key_win+key_tab",
             "btn_16": "none"
         },
         "抖音": {
@@ -34,14 +34,16 @@
             "btn_14": "key_left",
             "btn_15": "key_right",
             "btn_0": "key_space",
-            "btn_9": "key_ctrl+key_tab",
+            "btn_9": "none",
             "btn_6": "key_ctrl",
             "btn_8": "key_alt+key_tab",
-            "btn_16": "none"
+            "btn_16": "none",
+            "btn_3": "none",
+            "btn_2": "none"
         }
     },
     "sens": 5,
     "deadzone": 0.05,
     "enabled": true,
-    "scroll_sens": 5
+    "scroll_sens": 7
 }

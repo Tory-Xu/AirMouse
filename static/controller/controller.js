@@ -156,6 +156,7 @@ function updateUIValues() {
         if (el) {
             let val = currentMap[key];
             let display = MAPPING_NAMES[val] || val;
+            
             if (val.includes('+')) {
                 const keys = val.split('+');
                 display = keys.map(k => MAPPING_NAMES[k] || k.replace('key_', '').toUpperCase()).join('+');
@@ -164,13 +165,11 @@ function updateUIValues() {
             
             el.innerText = display;
             
-            if (val === 'none') {
-                el.style.color = '#fff';
-                el.style.background = '#28a745';
-            } else {
-                el.style.color = '#007aff';
-                el.style.background = '#000';
-            }
+            // 核心：通过 class 统一控制外观，不仅好看也方便调试
+            el.classList.toggle('is-none', val === 'none');
+            // 清理可能残留的内联样式
+            el.style.color = '';
+            el.style.background = '';
         }
     }
 }
