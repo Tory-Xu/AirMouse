@@ -12,7 +12,7 @@
 <body>
     <div class="header">
         <div class="header-btn" onclick="v(); window.location.href='/'">BACK</div>
-        
+
         <div class="profile-selector">
             <select id="profile-select" onchange="v(); switchProfile(this.value)"></select>
             <div class="header-btn" style="color:#666" onclick="v(); addProfile()">➕</div>
@@ -24,16 +24,17 @@
 
     <div class="main-layout">
         <div class="controls-wrapper">
-            <div id="master-switch-btn" class="master-switch active" onclick="v(); toggleMapping()">配置映射状态: 开启 ✅ </div>
 
             <div class="sens-group" style="margin-bottom:12px; display: flex; align-items:center; gap:10px;">
                 <div style="flex:1;">
                     <label style="font-size:12px; margin-bottom:4px;">鼠标灵敏度: <span id="sens-val">3.0</span></label>
-                    <input type="range" id="param-sens" min="1" max="20" step="1" value="3" style="height:4px; width:100%;">
+                    <input type="range" id="param-sens" min="1" max="20" step="1" value="3"
+                        style="height:4px; width:100%;">
                 </div>
                 <div style="width:80px;">
                     <label style="font-size:11px; color:#888; margin-bottom:4px;">响应曲线</label>
-                    <select id="param-curve" style="background:#222; border:1px solid #444; color:white; font-size:11px; padding:3px; border-radius:4px; width:100%;">
+                    <select id="param-curve"
+                        style="background:#222; border:1px solid #444; color:white; font-size:11px; padding:3px; border-radius:4px; width:100%;">
                         <option value="linear">线性 (1x)</option>
                         <option value="medium">标准 (中)</option>
                         <option value="aggressive">强化 (强)</option>
@@ -43,157 +44,266 @@
             <div style="display: flex; gap: 15px; margin-bottom: 12px;">
                 <div style="flex:1;">
                     <label style="font-size:12px; display:block; margin-bottom:4px; color:#888;">滚轮倍率 (1-50)</label>
-                    <input type="number" id="param-scroll-sens" min="1" max="50" step="1" value="10" 
+                    <input type="number" id="param-scroll-sens" min="1" max="50" step="1" value="10"
                         style="width:100%; height:32px; background:#111; border:1px solid #333; color:#007AFF; font-weight:bold; border-radius:6px; padding: 0 10px;">
                 </div>
                 <div style="flex:1;">
                     <label style="font-size:12px; display:block; margin-bottom:4px; color:#888;">摇杆死区 (0.01-0.5)</label>
-                    <input type="number" id="param-deadzone" min="0" max="0.5" step="0.01" value="0.15" 
+                    <input type="number" id="param-deadzone" min="0" max="0.5" step="0.01" value="0.15"
                         style="width:100%; height:32px; background:#111; border:1px solid #333; color:#007AFF; font-weight:bold; border-radius:6px; padding: 0 10px;">
                 </div>
             </div>
-            
+
             <p style="text-align: center; font-size: 11px; color: #888; margin-top: 5px;">点击下方手柄元素分配按键功能</p>
         </div>
 
         <!-- 可视化手柄 -->
         <div class="gamepad-visual">
-            <div class="gb gb-lt" onclick="openEdit('btn_6', '左扳机 (LT/L2)')"><span class="gb-name">LT</span><span class="gb-val is-none" id="val-btn_6">无</span></div>
-            <div class="gb gb-rt" onclick="openEdit('btn_7', '右扳机 (RT/R2)')"><span class="gb-name">RT</span><span class="gb-val is-none" id="val-btn_7">无</span></div>
-            <div class="gb gb-l1" onclick="openEdit('btn_4', '左肩键 (LB/L1)')"><span class="gb-name">LB</span><span class="gb-val is-none" id="val-btn_4">无</span></div>
-            <div class="gb gb-r1" onclick="openEdit('btn_5', '右肩键 (RB/R1)')"><span class="gb-name">RB</span><span class="gb-val is-none" id="val-btn_5">无</span></div>
+            <div class="gb gb-lt" onclick="openEdit('btn_6', '左扳机 (LT/L2)')"><span class="gb-name">LT</span><span
+                    class="gb-val is-none" id="val-btn_6">无</span></div>
+            <div class="gb gb-rt" onclick="openEdit('btn_7', '右扳机 (RT/R2)')"><span class="gb-name">RT</span><span
+                    class="gb-val is-none" id="val-btn_7">无</span></div>
+            <div class="gb gb-l1" onclick="openEdit('btn_4', '左肩键 (LB/L1)')"><span class="gb-name">LB</span><span
+                    class="gb-val is-none" id="val-btn_4">无</span></div>
+            <div class="gb gb-r1" onclick="openEdit('btn_5', '右肩键 (RB/R1)')"><span class="gb-name">RB</span><span
+                    class="gb-val is-none" id="val-btn_5">无</span></div>
 
             <div class="dpad-area">
-                <div class="gb gb-up" onclick="openEdit('btn_12', '十字键 上')"><span class="gb-name">▲</span><span class="gb-val is-none" id="val-btn_12">无</span></div>
-                <div class="gb gb-down" onclick="openEdit('btn_13', '十字键 下')"><span class="gb-name">▼</span><span class="gb-val is-none" id="val-btn_13">无</span></div>
-                <div class="gb gb-left" onclick="openEdit('btn_14', '十字键 左')"><span class="gb-name">◀</span><span class="gb-val is-none" id="val-btn_14">无</span></div>
-                <div class="gb gb-right" onclick="openEdit('btn_15', '十字键 右')"><span class="gb-name">▶</span><span class="gb-val is-none" id="val-btn_15">无</span></div>
+                <div class="gb gb-up" onclick="openEdit('btn_12', '十字键 上')"><span class="gb-name">▲</span><span
+                        class="gb-val is-none" id="val-btn_12">无</span></div>
+                <div class="gb gb-down" onclick="openEdit('btn_13', '十字键 下')"><span class="gb-name">▼</span><span
+                        class="gb-val is-none" id="val-btn_13">无</span></div>
+                <div class="gb gb-left" onclick="openEdit('btn_14', '十字键 左')"><span class="gb-name">◀</span><span
+                        class="gb-val is-none" id="val-btn_14">无</span></div>
+                <div class="gb gb-right" onclick="openEdit('btn_15', '十字键 右')"><span class="gb-name">▶</span><span
+                        class="gb-val is-none" id="val-btn_15">无</span></div>
             </div>
 
             <div class="act-area">
-                <div class="gb gb-y" onclick="openEdit('btn_3', 'Y 键 (Triangle)')"><span class="gb-name">Y</span><span class="gb-val is-none" id="val-btn_3">无</span></div>
-                <div class="gb gb-a" onclick="openEdit('btn_0', 'A 键 (Cross)')"><span class="gb-name">A</span><span class="gb-val is-none" id="val-btn_0">无</span></div>
-                <div class="gb gb-x" onclick="openEdit('btn_2', 'X 键 (Square)')"><span class="gb-name">X</span><span class="gb-val is-none" id="val-btn_2">无</span></div>
-                <div class="gb gb-b" onclick="openEdit('btn_1', 'B 键 (Circle)')"><span class="gb-name">B</span><span class="gb-val is-none" id="val-btn_1">无</span></div>
+                <div class="gb gb-y" onclick="openEdit('btn_3', 'Y 键 (Triangle)')"><span class="gb-name">Y</span><span
+                        class="gb-val is-none" id="val-btn_3">无</span></div>
+                <div class="gb gb-a" onclick="openEdit('btn_0', 'A 键 (Cross)')"><span class="gb-name">A</span><span
+                        class="gb-val is-none" id="val-btn_0">无</span></div>
+                <div class="gb gb-x" onclick="openEdit('btn_2', 'X 键 (Square)')"><span class="gb-name">X</span><span
+                        class="gb-val is-none" id="val-btn_2">无</span></div>
+                <div class="gb gb-b" onclick="openEdit('btn_1', 'B 键 (Circle)')"><span class="gb-name">B</span><span
+                        class="gb-val is-none" id="val-btn_1">无</span></div>
             </div>
 
-            <div class="gb gb-sel" onclick="openEdit('btn_8', 'Select/View')"><span class="gb-name">SEL</span><span class="gb-val is-none" id="val-btn_8">无</span></div>
-            <div class="gb gb-guide" onclick="openEdit('btn_16', 'Guide/Home')"><span class="gb-name">HOME</span><span class="gb-val is-none" id="val-btn_16">无</span></div>
-            <div class="gb gb-start" onclick="openEdit('btn_9', 'Start/Menu')"><span class="gb-name">START</span><span class="gb-val is-none" id="val-btn_9">无</span></div>
+            <div class="gb gb-sel" onclick="openEdit('btn_8', 'Select/View')"><span class="gb-name">SEL</span><span
+                    class="gb-val is-none" id="val-btn_8">无</span></div>
+            <div class="gb gb-guide" onclick="openEdit('btn_16', 'Guide/Home')"><span class="gb-name">HOME</span><span
+                    class="gb-val is-none" id="val-btn_16">无</span></div>
+            <div class="gb gb-start" onclick="openEdit('btn_9', 'Start/Menu')"><span class="gb-name">START</span><span
+                    class="gb-val is-none" id="val-btn_9">无</span></div>
 
             <!-- 摇杆视觉 -->
-            <div class="gb-ls-wrap" style="position:absolute; left:35%; bottom:10%; width:15%; height:26%; border:2px dashed #444; border-radius:50%; box-sizing:border-box; z-index:0;"></div>
+            <div class="gb-ls-wrap"
+                style="position:absolute; left:35%; bottom:10%; width:15%; height:26%; border:2px dashed #444; border-radius:50%; box-sizing:border-box; z-index:0;">
+            </div>
             <div class="gb gb-ls" onclick="openEdit('stick_left', '左摇杆预设')" style="z-index: 10;">
-                <span class="gb-name" style="font-size: 16px;">左摇杆</span><span class="gb-val" id="val-stick_left">预设</span>
+                <span class="gb-name" style="font-size: 16px;">左摇杆</span><span class="gb-val"
+                    id="val-stick_left">预设</span>
             </div>
-            <div class="gb gb-ls-btn" onclick="openEdit('btn_10', '左摇杆按下 (L3)')"><span class="gb-name">L3按下</span><span class="gb-val is-none" id="val-btn_10">无</span></div>
+            <div class="gb gb-ls-btn" onclick="openEdit('btn_10', '左摇杆按下 (L3)')"><span class="gb-name">L3按下</span><span
+                    class="gb-val is-none" id="val-btn_10">无</span></div>
 
-            <div class="gb-rs-wrap" style="position:absolute; right:35%; bottom:10%; width:15%; height:26%; border:2px dashed #444; border-radius:50%; box-sizing:border-box; z-index:0;"></div>
-            <div class="gb gb-rs" onclick="openEdit('stick_right', '右摇杆预设')" style="z-index: 10;">
-                <span class="gb-name" style="font-size: 16px;">右摇杆</span><span class="gb-val" id="val-stick_right">预设</span>
+            <div class="gb-rs-wrap"
+                style="position:absolute; right:35%; bottom:10%; width:15%; height:26%; border:2px dashed #444; border-radius:50%; box-sizing:border-box; z-index:0;">
             </div>
-            <div class="gb gb-rs-btn" onclick="openEdit('btn_11', '右摇杆按下 (R3)')"><span class="gb-name">R3按下</span><span class="gb-val is-none" id="val-btn_11">无</span></div>
+            <div class="gb gb-rs" onclick="openEdit('stick_right', '右摇杆预设')" style="z-index: 10;">
+                <span class="gb-name" style="font-size: 16px;">右摇杆</span><span class="gb-val"
+                    id="val-stick_right">预设</span>
+            </div>
+            <div class="gb gb-rs-btn" onclick="openEdit('btn_11', '右摇杆按下 (R3)')"><span class="gb-name">R3按下</span><span
+                    class="gb-val is-none" id="val-btn_11">无</span></div>
         </div>
     </div>
 
     <!-- Unified Master Binding Modal -->
     <div id="vkb-modal" class="modal-outer" style="display: none;">
         <div class="modal-content" style="max-width: 800px; width: 95%; padding: 10px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 id="vkb-title" style="margin: 0; padding-bottom: 0px; border: none; font-size: 15px; color:#007AFF;">请分配功能...</h3>
-                <button onclick="document.getElementById('vkb-modal').style.display='none'" style="background: #333; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold;">取消设置</button>
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 id="vkb-title"
+                    style="margin: 0; padding-bottom: 0px; border: none; font-size: 15px; color:#007AFF;">请分配功能...</h3>
+                <button onclick="document.getElementById('vkb-modal').style.display='none'"
+                    style="background: #333; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold;">取消设置</button>
             </div>
-            
+
             <!-- Stick Presets Only -->
             <div id="stick-presets-area" style="display:none; gap: 8px; flex-wrap: wrap; justify-content:center;">
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #28a745; color: white;" onclick="v(); assignVKey('none')">🚫 禁用摇杆</button>
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #007AFF;" onclick="v(); assignVKey('mouse')">🖱️ 光标移动 (鼠标)</button>
-                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;" onclick="v(); assignVKey('scroll')">🖱️ 滚轮翻页 (自然方向)</button>
-                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;" onclick="v(); assignVKey('scroll_rev')">🖱️ 滚轮 (指向方向)</button>
-                <button class="k-sym" style="flex:auto; padding: 15px;" onclick="v(); assignVKey('arrows')">⌨️ 映射方向键</button>
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;" onclick="v(); assignVKey('wasd')">⌨️ 映射 WASD</button>
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;" onclick="v(); assignVKey('hjkl')">⌨️ 映射 HJKL</button>
+                <button class="k-sym"
+                    style="flex:auto; padding: 20px; font-size: 15px; background: #28a745; color: white;"
+                    onclick="v(); assignVKey('none')">🚫 禁用摇杆</button>
+                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #007AFF;"
+                    onclick="v(); assignVKey('mouse')">🖱️ 光标移动 (鼠标)</button>
+                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;"
+                    onclick="v(); assignVKey('scroll')">🖱️ 滚轮翻页 (自然方向)</button>
+                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;"
+                    onclick="v(); assignVKey('scroll_rev')">🖱️ 滚轮 (指向方向)</button>
+                <button class="k-sym" style="flex:auto; padding: 15px;" onclick="v(); assignVKey('arrows')">⌨️
+                    映射方向键</button>
+                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;"
+                    onclick="v(); assignVKey('wasd')">⌨️ 映射 WASD</button>
+                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;"
+                    onclick="v(); assignVKey('hjkl')">⌨️ 映射 HJKL</button>
             </div>
 
             <!-- Quick Presets for ABXY/D-PAD -->
-            <div id="quick-presets-area" style="display:none; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; justify-content:center; background: #222; padding: 10px; border-radius: 8px;">
-                <span id="quick-preset-title" style="flex:100%; font-size:12px; color:#888; text-align:center;">💡 快速覆盖整个按键组的配置:</span>
-                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;" onclick="v(); assignBulk('arrows')">填入: 方向键</button>
-                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;" onclick="v(); assignBulk('wasd')">填入: WASD</button>
+            <div id="quick-presets-area"
+                style="display:none; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; justify-content:center; background: #222; padding: 10px; border-radius: 8px;">
+                <span id="quick-preset-title" style="flex:100%; font-size:12px; color:#888; text-align:center;">💡
+                    快速覆盖整个按键组的配置:</span>
+                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;"
+                    onclick="v(); assignBulk('arrows')">填入: 方向键</button>
+                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;"
+                    onclick="v(); assignBulk('wasd')">填入: WASD</button>
             </div>
 
             <!-- Full Keyboard & Mouse for Buttons -->
-            <div id="combo-mode-bar" style="display:none; justify-content:space-between; align-items:center; background:#111; padding:8px 12px; border-radius:8px; margin-bottom:10px; border:1px solid #333;">
+            <div id="combo-mode-bar"
+                style="display:none; justify-content:space-between; align-items:center; background:#111; padding:8px 12px; border-radius:8px; margin-bottom:10px; border:1px solid #333;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                    <input type="checkbox" id="combo-toggle" onchange="toggleComboMode(this.checked)" style="width:16px; height:16px;">
+                    <input type="checkbox" id="combo-toggle" onchange="toggleComboMode(this.checked)"
+                        style="width:16px; height:16px;">
                     <span style="font-size:14px; font-weight:bold; color:#ffcc00;">开启组合键联动</span>
                 </label>
-                <div id="combo-display" style="display:none; flex:1; margin:0 10px; background:#000; padding:6px 8px; border-radius:6px; font-size:13px; color:#00ff00; min-height:18px; text-align:center; font-weight:bold;"></div>
+                <div id="combo-display"
+                    style="display:none; flex:1; margin:0 10px; background:#000; padding:6px 8px; border-radius:6px; font-size:13px; color:#00ff00; min-height:18px; text-align:center; font-weight:bold;">
+                </div>
                 <div style="display:flex; gap:5px;">
-                    <button id="combo-confirm-btn" style="display:none; background:#007AFF; color:white; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="confirmCombo()">确认</button>
-                    <button id="combo-clear-btn" style="display:none; background:#ff3b30; color:white; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="clearCombo()">清除</button>
+                    <button id="combo-confirm-btn"
+                        style="display:none; background:#007AFF; color:white; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer;"
+                        onclick="confirmCombo()">确认</button>
+                    <button id="combo-clear-btn"
+                        style="display:none; background:#ff3b30; color:white; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer;"
+                        onclick="clearCombo()">清除</button>
                 </div>
             </div>
 
             <div class="keyboard-grid" id="vk-grid" style="min-height: 200px;">
-                <div class="row" style="margin-bottom: 6px;">
-                    <button class="k-sym" style="flex:1; background:#28a745; color: white; font-size: 13px;" onclick="v(); assignVKey('none')">🚫 无 (取消功能)</button>
-                    <button class="k-sym" style="flex:1; background:#007AFF; font-size: 13px;" onclick="v(); assignVKey('click_left')">🖱️ 鼠标左键</button>
-                    <button class="k-sym" style="flex:1; background:#007AFF; font-size: 13px;" onclick="v(); assignVKey('click_right')">🖱️ 鼠标右键</button>
-                    <button class="k-sym" style="flex:1; background:#007AFF; font-size: 13px;" onclick="v(); assignVKey('click_middle')">🖱️ 鼠标中键</button>
-                </div>
-                <!-- 键盘复刻 -->
-                <div class="row" style="margin-bottom: 8px;">
-                    <div style="flex:1; display:flex; gap:6px; background:#1a1a1a; padding:4px; border-radius:6px; border:1px solid #333;">
-                        <input type="text" id="manual-key-input" placeholder="手动输入按键名 (如: f11, home)" 
-                            style="flex:1; background:transparent; border:none; color:#00ff00; font-size:12px; padding:0 8px; outline:none;">
-                        <button onclick="v(); assignManualKey()" 
-                            style="min-height:30px; height:30px; padding:0 15px; background:#007AFF; color:white; border:none; font-size:11px;">绑定输入</button>
+                <!-- 顶栏功能区：合并了设置和快捷操作 -->
+                <div class="row" style="margin-bottom: 10px; gap: 8px;">
+                    <!-- 左侧：功能清除与鼠标按键 -->
+                    <div style="flex: 1.2; display: flex; gap: 4px;">
+                        <button class="k-sym" style="flex: 1.2; background: #28a745; color: white; font-size: 11px;"
+                            onclick="v(); assignVKey('none')">🚫 无</button>
+                        <button class="k-sym" style="flex: 1; background: #333; color: #fff; font-size: 11px; padding:0"
+                            onclick="v(); assignVKey('click_left')">🖱️左</button>
+                        <button class="k-sym" style="flex: 1; background: #007AFF; color: white; font-size: 11px; padding:0"
+                            onclick="v(); assignVKey('click_middle')">🖱️中</button>
+                        <button class="k-sym" style="flex: 1; background: #333; color: #fff; font-size: 11px; padding:0"
+                            onclick="v(); assignVKey('click_right')">🖱️右</button>
+                    </div>
+                    
+                    <!-- 右侧：手动输入功能框 -->
+                    <div style="flex: 1; display: flex; gap: 4px; background: #1a1a1a; padding: 2px; border-radius: 6px; border: 1px solid #444;">
+                        <input type="text" id="manual-key-input" placeholder="输入按键 (f11)"
+                            style="flex: 1; background: transparent; border: none; color: #00ff00; font-size: 11px; padding: 0 4px; outline: none; min-width: 0;">
+                        <button onclick="v(); assignManualKey()"
+                            style="height: 100%; padding: 0 6px; background: #007AFF; color: white; border: none; font-size: 10px; border-radius: 4px; flex-shrink: 0; min-width:35px;">绑定</button>
                     </div>
                 </div>
 
                 <!-- 键盘复刻 -->
-                <div class="row">
-                    <button class="k-f esc" onclick="v(); assignVKey('esc')">ESC</button>
-                    <button class="k-f" onclick="v(); assignVKey('f1')">F1</button><button class="k-f" onclick="v(); assignVKey('f2')">F2</button><button class="k-f" onclick="v(); assignVKey('f3')">F3</button><button class="k-f" onclick="v(); assignVKey('f4')">F4</button>
-                    <button class="k-f" onclick="v(); assignVKey('f5')">F5</button><button class="k-f" onclick="v(); assignVKey('f6')">F6</button>
-                    <button class="k-f" style="color:#ff3b30;" onclick="v(); assignVKey('delete')">DEL</button>
-                </div>
-                <div class="row">
-                    <button class="k-f" onclick="v(); assignVKey('f7')">F7</button><button class="k-f" onclick="v(); assignVKey('f8')">F8</button>
-                    <button class="k-f" onclick="v(); assignVKey('f9')">F9</button><button class="k-f" onclick="v(); assignVKey('f10')">F10</button>
-                    <button class="k-f" onclick="v(); assignVKey('f11')">F11</button><button class="k-f" onclick="v(); assignVKey('f12')">F12</button>
+                <div class="row" style="font-size: 10px;">
+                    <button class="k-f esc" style="flex:0.6" onclick="v(); assignVKey('esc')">ESC</button>
+                    <button class="k-f" onclick="v(); assignVKey('f1')">F1</button><button class="k-f"
+                        onclick="v(); assignVKey('f2')">F2</button><button class="k-f"
+                        onclick="v(); assignVKey('f3')">F3</button><button class="k-f"
+                        onclick="v(); assignVKey('f4')">F4</button>
+                    <button class="k-f" onclick="v(); assignVKey('f5')">F5</button><button class="k-f"
+                        onclick="v(); assignVKey('f6')">F6</button><button class="k-f"
+                        onclick="v(); assignVKey('f7')">F7</button><button class="k-f"
+                        onclick="v(); assignVKey('f8')">F8</button>
+                    <button class="k-f" onclick="v(); assignVKey('f9')">F9</button><button class="k-f"
+                        onclick="v(); assignVKey('f10')">F10</button>
+                    <button class="k-f" onclick="v(); assignVKey('f11')">F11</button><button class="k-f"
+                        onclick="v(); assignVKey('f12')">F12</button>
+                    <button class="k-f" style="flex:0.6; color:#ff3b30;"
+                        onclick="v(); assignVKey('delete')">DEL</button>
                 </div>
                 <div class="row">
                     <button class="k-esc" onclick="v(); assignVKey('`')">`</button>
-                    <button class="k-sym" onclick="v(); assignVKey('1')">1</button><button class="k-sym" onclick="v(); assignVKey('2')">2</button><button class="k-sym" onclick="v(); assignVKey('3')">3</button><button class="k-sym" onclick="v(); assignVKey('4')">4</button><button class="k-sym" onclick="v(); assignVKey('5')">5</button><button class="k-sym" onclick="v(); assignVKey('6')">6</button><button class="k-sym" onclick="v(); assignVKey('7')">7</button><button class="k-sym" onclick="v(); assignVKey('8')">8</button><button class="k-sym" onclick="v(); assignVKey('9')">9</button><button class="k-sym" onclick="v(); assignVKey('0')">0</button>
-                    <button class="k-sym" onclick="v(); assignVKey('-')">-</button><button class="k-sym" onclick="v(); assignVKey('=')">=</button>
+                    <button class="k-sym" onclick="v(); assignVKey('1')">1</button><button class="k-sym"
+                        onclick="v(); assignVKey('2')">2</button><button class="k-sym"
+                        onclick="v(); assignVKey('3')">3</button><button class="k-sym"
+                        onclick="v(); assignVKey('4')">4</button><button class="k-sym"
+                        onclick="v(); assignVKey('5')">5</button><button class="k-sym"
+                        onclick="v(); assignVKey('6')">6</button><button class="k-sym"
+                        onclick="v(); assignVKey('7')">7</button><button class="k-sym"
+                        onclick="v(); assignVKey('8')">8</button><button class="k-sym"
+                        onclick="v(); assignVKey('9')">9</button><button class="k-sym"
+                        onclick="v(); assignVKey('0')">0</button>
+                    <button class="k-sym" onclick="v(); assignVKey('-')">-</button><button class="k-sym"
+                        onclick="v(); assignVKey('=')">=</button>
                     <button class="k-wide" onclick="v(); assignVKey('backspace')">BACK</button>
                 </div>
                 <div class="row">
                     <button class="k-wide" onclick="v(); assignVKey('tab')">TAB</button>
-                    <button onclick="v(); assignVKey('q')">Q</button><button onclick="v(); assignVKey('w')">W</button><button onclick="v(); assignVKey('e')">E</button><button onclick="v(); assignVKey('r')">R</button><button onclick="v(); assignVKey('t')">T</button><button onclick="v(); assignVKey('y')">Y</button><button onclick="v(); assignVKey('u')">U</button><button onclick="v(); assignVKey('i')">I</button><button onclick="v(); assignVKey('o')">O</button><button onclick="v(); assignVKey('p')">P</button>
-                    <button class="k-sym" onclick="v(); assignVKey('[')">[</button><button class="k-sym" onclick="v(); assignVKey(']')">]</button><button class="k-sym" onclick="v(); assignVKey('\\')">\</button>
+                    <button onclick="v(); assignVKey('q')">Q</button><button
+                        onclick="v(); assignVKey('w')">W</button><button
+                        onclick="v(); assignVKey('e')">E</button><button
+                        onclick="v(); assignVKey('r')">R</button><button
+                        onclick="v(); assignVKey('t')">T</button><button
+                        onclick="v(); assignVKey('y')">Y</button><button
+                        onclick="v(); assignVKey('u')">U</button><button
+                        onclick="v(); assignVKey('i')">I</button><button
+                        onclick="v(); assignVKey('o')">O</button><button onclick="v(); assignVKey('p')">P</button>
+                    <button class="k-sym" onclick="v(); assignVKey('[')">[</button><button class="k-sym"
+                        onclick="v(); assignVKey(']')">]</button><button class="k-sym"
+                        onclick="v(); assignVKey('\\')">\</button>
                 </div>
                 <div class="row">
                     <button class="k-caps" onclick="v(); assignVKey('caps')">CAPS</button>
-                    <button onclick="v(); assignVKey('a')">A</button><button onclick="v(); assignVKey('s')">S</button><button onclick="v(); assignVKey('d')">D</button><button onclick="v(); assignVKey('f')">F</button><button onclick="v(); assignVKey('g')">G</button><button onclick="v(); assignVKey('h')">H</button><button onclick="v(); assignVKey('j')">J</button><button onclick="v(); assignVKey('k')">K</button><button onclick="v(); assignVKey('l')">L</button>
-                    <button class="k-sym" onclick="v(); assignVKey(';')">;</button><button class="k-sym" onclick="v(); assignVKey('\'')">'</button>
+                    <button onclick="v(); assignVKey('a')">A</button><button
+                        onclick="v(); assignVKey('s')">S</button><button
+                        onclick="v(); assignVKey('d')">D</button><button
+                        onclick="v(); assignVKey('f')">F</button><button
+                        onclick="v(); assignVKey('g')">G</button><button
+                        onclick="v(); assignVKey('h')">H</button><button
+                        onclick="v(); assignVKey('j')">J</button><button
+                        onclick="v(); assignVKey('k')">K</button><button onclick="v(); assignVKey('l')">L</button>
+                    <button class="k-sym" onclick="v(); assignVKey(';')">;</button><button class="k-sym"
+                        onclick="v(); assignVKey('\'')">'</button>
                     <button class="k-enter" onclick="v(); assignVKey('enter')">ENTER</button>
                 </div>
                 <div class="row">
                     <button class="k-shift" onclick="v(); assignVKey('shift')">SHIFT</button>
-                    <button onclick="v(); assignVKey('z')">Z</button><button onclick="v(); assignVKey('x')">X</button><button onclick="v(); assignVKey('c')">C</button><button onclick="v(); assignVKey('v')">V</button><button onclick="v(); assignVKey('b')">B</button><button onclick="v(); assignVKey('n')">N</button><button onclick="v(); assignVKey('m')">M</button>
-                    <button class="k-sym" onclick="v(); assignVKey(',')">,</button><button class="k-sym" onclick="v(); assignVKey('.')">.</button><button class="k-sym" onclick="v(); assignVKey('/')">/</button>
-                    <button class="k-arrow" onclick="v(); assignVKey('up')">↑</button>
+                    <button onclick="v(); assignVKey('z')">Z</button><button
+                        onclick="v(); assignVKey('x')">X</button><button
+                        onclick="v(); assignVKey('c')">C</button><button
+                        onclick="v(); assignVKey('v')">V</button><button
+                        onclick="v(); assignVKey('b')">B</button><button
+                        onclick="v(); assignVKey('n')">N</button><button onclick="v(); assignVKey('m')">M</button>
+                    <button class="k-sym" onclick="v(); assignVKey(',')">,</button><button class="k-sym"
+                        onclick="v(); assignVKey('.')">.</button><button class="k-sym"
+                        onclick="v(); assignVKey('/')">/</button>
+                    <div style="flex: 2.4; display:flex; gap:4px; height:100%;">
+                        <div style="flex:0.55;"></div>
+                        <button class="k-arrow" style="flex:1 !important;" onclick="v(); assignVKey('up')">↑</button>
+                        <div style="flex:1;"></div>
+                    </div>
                 </div>
                 <div class="row">
-                    <button class="k-wide" onclick="v(); assignVKey('ctrl')">CTRL</button><button onclick="v(); assignVKey('win')">WIN</button><button onclick="v(); assignVKey('alt')">ALT</button>
+                    <button class="k-wide" onclick="v(); assignVKey('ctrl')">CTRL</button><button
+                        onclick="v(); assignVKey('win')">WIN</button><button
+                        onclick="v(); assignVKey('alt')">ALT</button>
                     <button class="k-space" onclick="v(); assignVKey('space')">SPACE</button>
-                    <button class="k-arrow" onclick="v(); assignVKey('left')">←</button><button class="k-arrow" onclick="v(); assignVKey('down')">↓</button><button class="k-arrow" onclick="v(); assignVKey('right')">→</button>
+                    <div style="flex: 2.4; display:flex; gap:4px; height:100%;">
+                        <button class="k-arrow" style="flex:1 !important;" onclick="v(); assignVKey('left')">←</button>
+                        <button class="k-arrow" style="flex:1 !important;" onclick="v(); assignVKey('down')">↓</button>
+                        <button class="k-arrow" style="flex:1 !important;" onclick="v(); assignVKey('right')">→</button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 浮动在右下角的总开关：更加触手可及 -->
+    <div id="master-switch-btn" class="master-switch floating-switch active" onclick="v(); toggleMapping()">
+        🎯 驱动状态: 开启
     </div>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>

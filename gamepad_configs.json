@@ -3,7 +3,7 @@
     "profiles": {
         "Default": {
             "stick_left": "scroll_rev",
-            "btn_5": "key_[",
+            "btn_5": "click_left",
             "btn_7": "click_right",
             "stick_right": "mouse",
             "btn_4": "click_middle",
@@ -16,7 +16,7 @@
             "btn_15": "key_right",
             "btn_0": "key_space",
             "btn_9": "key_alt+key_q",
-            "btn_6": "none",
+            "btn_6": "key_f11",
             "btn_8": "key_win+key_tab",
             "btn_16": "none"
         },

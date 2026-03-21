@@ -274,19 +274,29 @@ body {
     border: 1px solid #333;
     padding: 10px 20px;
     border-radius: 12px;
-    width: 100%;
     text-align: center;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    margin-bottom: 20px;
     transition: all 0.2s;
     user-select: none;
 }
+.floating-switch {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 1500;
+    width: auto;
+    min-width: 140px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
 .master-switch.active {
-    background: #007AFF;
-    color: white;
-    border-color: #005bb5;
+    background: #064e3b; /* 深翠绿，不晃眼 */
+    color: #10b981; /* 柔和的亮绿字体 */
+    border-color: #065f46;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 .master-switch:active {
     transform: scale(0.95);
