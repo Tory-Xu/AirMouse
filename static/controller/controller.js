@@ -20,16 +20,16 @@ const MAPPING_NAMES = {
     "click_left": "左键",
     "click_right": "右键",
     "click_middle": "中键",
-    "drag": "拖拽",
-    "key_space": "空格",
-    "key_enter": "回车",
-    "key_esc": "ESC",
-    "key_backspace": "退格",
-    "key_w":"W", "key_a":"A", "key_s":"S", "key_d":"D",
-    "key_e":"E", "key_q":"Q", "key_r":"R", "key_f":"F",
-    "key_shift": "Shift", "key_ctrl":"Ctrl", "key_tab":"Tab",
-    "key_up": "↑", "key_down": "↓", "key_left": "←", "key_right": "→"
+    "drag": "拖拽"
 };
+
+// 预处理部分预设快捷名，剩下的通过 fallback 原文大写显示
+['space', 'enter', 'esc', 'backspace', 'up', 'down', 'left', 'right', 'shift', 'ctrl', 'tab', 'alt', 'win', 'delete'].forEach(k => {
+    MAPPING_NAMES['key_'+k] = k.toUpperCase();
+});
+['w','a','s','d','e','q','r','f'].forEach(k => {
+    MAPPING_NAMES['key_'+k] = k.toUpperCase();
+});
 
 let ctrlData = {
     current: "Default",
@@ -171,32 +171,76 @@ function deleteProfile() {
 function openEdit(keyId, title) {
     v();
     currentEditKey = keyId;
-    document.getElementById('edit-title').innerText = "配置: " + title;
+    document.getElementById('vkb-title').innerText = "配置: " + title;
     
-    if (keyId.startsWith('stick_')) {
-        document.getElementById('btn-options').style.display = 'none';
-        document.getElementById('stick-options').style.display = 'block';
-        document.getElementById('stick-select').value = currentMap[keyId] || 'none';
-    } else {
-        document.getElementById('btn-options').style.display = 'block';
-        document.getElementById('stick-options').style.display = 'none';
-        document.getElementById('btn-select').value = currentMap[keyId] || 'none';
-    }
+    const isStick = keyId.startsWith('stick_');
+    document.getElementById('stick-presets-area').style.display = isStick ? 'flex' : 'none';
+    document.getElementById('vk-grid').style.display = isStick ? 'none' : 'flex';
     
-    document.getElementById('edit-modal').style.display = 'flex';
+    document.getElementById('vkb-modal').style.display = 'flex';
 }
 
 function closeEdit() {
-    document.getElementById('edit-modal').style.display = 'none';
+    document.getElementById('vkb-modal').style.display = 'none';
 }
 
-function saveEdit() {
-    const val = currentEditKey.startsWith('stick_') 
-        ? document.getElementById('stick-select').value 
-        : document.getElementById('btn-select').value;
+// 虚拟键盘直接绑定回调
+function assignVKey(key) {
+    if(!currentEditKey) return;
     
-    currentMap[currentEditKey] = val;
+    let mappedVal = key;
+    if (key !== 'none' && !key.startsWith('click_') && key !== 'mouse' && key !== 'scroll' && key !== 'wasd' && key !== 'arrows' && key !== 'hjkl') {
+        mappedVal = 'key_' + key;
+    }
+    
+    currentMap[currentEditKey] = mappedVal;
+    
+    document.getElementById('vkb-modal').style.display = 'none';
     saveToServer();
     updateUIValues();
-    closeEdit();
 }
+
+// === 可视化 UI 动效反馈 ===
+function updateGamepadUI() {
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+    let activePad = null;
+    for (let i = 0; i < gamepads.length; i++) {
+        if (gamepads[i] && gamepads[i].connected) {
+            activePad = gamepads[i]; break;
+        }
+    }
+
+    if (activePad) {
+        // 更新按键按下状态 (蓝色高亮)
+        activePad.buttons.forEach((btn, idx) => {
+            const valSpan = document.getElementById(`val-btn_${idx}`);
+            if (valSpan) {
+                const parent = valSpan.parentElement;
+                if (btn.pressed) {
+                    parent.style.transform = 'scale(0.85)';
+                    parent.style.boxShadow = '0 0 10px #007AFF, inset 0 0 10px #007AFF';
+                    parent.style.borderColor = '#007AFF';
+                    parent.style.zIndex = '100';
+                } else {
+                    parent.style.transform = '';
+                    parent.style.boxShadow = '';
+                    parent.style.borderColor = '';
+                    parent.style.zIndex = '';
+                }
+            }
+        });
+
+        // 动画摇杆位置
+        const l_x = activePad.axes[0] || 0, l_y = activePad.axes[1] || 0;
+        const r_x = activePad.axes[2] || 0, r_y = activePad.axes[3] || 0;
+        
+        const stickL = document.querySelector('.gb-ls');
+        if (stickL) stickL.style.transform = `translate(${l_x * 20}px, ${l_y * 15}px)`;
+        
+        const stickR = document.querySelector('.gb-rs');
+        if (stickR) stickR.style.transform = `translate(${r_x * 20}px, ${r_y * 15}px)`;
+    }
+
+    requestAnimationFrame(updateGamepadUI);
+}
+requestAnimationFrame(updateGamepadUI);

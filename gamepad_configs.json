@@ -2,10 +2,12 @@
     "current": "Default",
     "profiles": {
         "Default": {
-            "stick_left": "mouse",
+            "stick_left": "scroll",
             "btn_5": "click_left",
             "btn_7": "click_right",
-            "stick_right": "scroll"
+            "stick_right": "mouse",
+            "btn_4": "none",
+            "btn_11": "key_space"
         }
     },
     "sens": 9,

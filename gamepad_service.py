@@ -8,7 +8,10 @@ try:
     import inputs
 except ImportError:
     inputs = None
-    print("WARNING: 'inputs' library is not installed. PC gamepad support is disabled. Run 'pip install inputs' to enable it.")
+    print("WARNING: 'inputs' library is not installed.")
+
+from pynput.mouse import Controller as MouseController, Button as MouseButton
+pmouse = MouseController()
 
 # 当前手柄的状态
 state = {
@@ -81,98 +84,126 @@ def handle_btn(btn_code, pressed):
     execute_action(action, pressed)
 
 def execute_action(action, pressed):
-    global is_dragging
     if action == 'none': return
     
     if action.startswith('click_'):
-        if pressed:
-            btn = action.split('_')[1]
-            try:
-                mouse_service.handle_click({'button': btn})
-            except Exception:
-                pass
-    elif action == 'drag':
-        mouse_service.handle_drag_start() if pressed else mouse_service.handle_drag_end()
+        btn_map = {'left': MouseButton.left, 'right': MouseButton.right, 'middle': MouseButton.middle}
+        btn_str = action.split('_')[1]
+        try:
+            if pressed: pmouse.press(btn_map[btn_str])
+            else: pmouse.release(btn_map[btn_str])
+        except Exception:
+            pass
     elif action.startswith('key_'):
         mapped_key = action.replace('key_', '')
         keyboard_service.handle_key_action({'key': mapped_key, 'action': 'down' if pressed else 'up'})
 
 def process_continuous():
-    """持续处理摇杆坐标，每 16ms 执行一次以保持丝滑移动"""
+    """持续处理摇杆坐标，执行精准高帧率平滑移动 (固定 160Hz)"""
     global active_keys
     
+    target_fps = 160
+    frame_time = 1.0 / target_fps
+    
+    # 用来记录小数部分的运动，防止 pynput 吞掉无法整除 1 的偏移量导致严重卡顿
+    rem_mx, rem_my = 0.0, 0.0
+    rem_sx, rem_sy = 0.0, 0.0
+    
     while True:
-        time.sleep(0.016)
-        if not gamepad_connected: continue
+        start_t = time.perf_counter()
         
-        data = get_current_cfg()
-        if not data or not data.get('current'): continue
-        
-        current_map = data['profiles'][data['current']]
-        sens = float(data.get('sens', 5.0))
-        dz = float(data.get('deadzone', 0.15))
-        
-        # 解析摇杆 (-1.0 to 1.0)
-        # Xbox controllers: X/Y range from -32768 to 32767. Y is usually inverted (negative is up).
-        # However, to match Web Gamepad API where -1.0 is LEFT/UP and 1.0 is RIGHT/DOWN:
-        l_x = apply_dz(state['ABS_X'], 32767, dz)
-        l_y = apply_dz(state['ABS_Y'], -32767, dz)  # inputs gives negative for UP, HTML5 gives negative for UP. Wait, negative / 32767 = negative. To make -1.0 = UP, we divide by -32767. So if Y=32767 (Up), 32767 / -32767 = -1.0 (UP). Perfect.
-        r_x = apply_dz(state['ABS_RX'], 32767, dz)
-        r_y = apply_dz(state['ABS_RY'], -32767, dz)
-        lt  = apply_dz(state['ABS_Z'], 255, dz)
-        rt  = apply_dz(state['ABS_RZ'], 255, dz)
-        
-        # 兼容扳机键 (L2/R2) 的阈值控制 (当按钮处理)
-        lt_pressed = lt > 0.5
-        rt_pressed = rt > 0.5
-        # ... 可以通过状态机单独处理扳机键的 pressed，这里为了简便我们用 event 比较好
-        # 但是 inputs 把扳机键当轴，只能在这里处理：
-        global prev_lt, prev_rt
-        if 'prev_lt' not in globals(): prev_lt = False
-        if 'prev_rt' not in globals(): prev_rt = False
-        
-        if lt_pressed != prev_lt:
-            execute_action(current_map.get('btn_6', 'none'), lt_pressed)
-            prev_lt = lt_pressed
-        if rt_pressed != prev_rt:
-            execute_action(current_map.get('btn_7', 'none'), rt_pressed)
-            prev_rt = rt_pressed
-            
-        # 兼容十字键 (D-pad) 的持续读取 (因为 inputs 中的帽子视作轴，只有 -1, 0, 1)
-        hat_x = state['HAT_X']
-        hat_y = state['HAT_Y']
-        global prev_hat
-        if 'prev_hat' not in globals(): prev_hat = {'u':False, 'd':False, 'l':False, 'r':False}
-        
-        # D-pad Up/Down (Y is -1 for UP, 1 for DOWN)
-        u_p = hat_y == -1; d_p = hat_y == 1
-        l_p = hat_x == -1; r_p = hat_x == 1
-        
-        if u_p != prev_hat['u']: execute_action(current_map.get('btn_12', 'none'), u_p); prev_hat['u'] = u_p
-        if d_p != prev_hat['d']: execute_action(current_map.get('btn_13', 'none'), d_p); prev_hat['d'] = d_p
-        if l_p != prev_hat['l']: execute_action(current_map.get('btn_14', 'none'), l_p); prev_hat['l'] = l_p
-        if r_p != prev_hat['r']: execute_action(current_map.get('btn_15', 'none'), r_p); prev_hat['r'] = r_p
+        if gamepad_connected:
+            data = get_current_cfg()
+            if data and data.get('current'):
+                current_map = data['profiles'][data['current']]
+                sens = float(data.get('sens', 5.0))
+                dz = float(data.get('deadzone', 0.15))
+                
+                # 解析摇杆 (-1.0 to 1.0)
+                l_x = apply_dz(state['ABS_X'], 32767, dz)
+                l_y = apply_dz(state['ABS_Y'], -32767, dz)
+                r_x = apply_dz(state['ABS_RX'], 32767, dz)
+                r_y = apply_dz(state['ABS_RY'], -32767, dz)
+                lt  = apply_dz(state['ABS_Z'], 255, dz)
+                rt  = apply_dz(state['ABS_RZ'], 255, dz)
+                
+                # 兼容扳机
+                lt_pressed = lt > 0.5
+                rt_pressed = rt > 0.5
+                global prev_lt, prev_rt
+                if 'prev_lt' not in globals(): prev_lt = False
+                if 'prev_rt' not in globals(): prev_rt = False
+                
+                if lt_pressed != prev_lt:
+                    execute_action(current_map.get('btn_6', 'none'), lt_pressed)
+                    prev_lt = lt_pressed
+                if rt_pressed != prev_rt:
+                    execute_action(current_map.get('btn_7', 'none'), rt_pressed)
+                    prev_rt = rt_pressed
+                    
+                # 兼容十字键
+                hat_x = state['HAT_X']
+                hat_y = state['HAT_Y']
+                global prev_hat
+                if 'prev_hat' not in globals(): prev_hat = {'u':False, 'd':False, 'l':False, 'r':False}
+                
+                u_p = hat_y == -1; d_p = hat_y == 1
+                l_p = hat_x == -1; r_p = hat_x == 1
+                
+                if u_p != prev_hat['u']: execute_action(current_map.get('btn_12', 'none'), u_p); prev_hat['u'] = u_p
+                if d_p != prev_hat['d']: execute_action(current_map.get('btn_13', 'none'), d_p); prev_hat['d'] = d_p
+                if l_p != prev_hat['l']: execute_action(current_map.get('btn_14', 'none'), l_p); prev_hat['l'] = l_p
+                if r_p != prev_hat['r']: execute_action(current_map.get('btn_15', 'none'), r_p); prev_hat['r'] = r_p
 
-        # 处理摇杆移动和虚拟键
-        res = {'mx':0, 'my':0, 'sx':0, 'sy':0, 'keys': set()}
-        handle_stick(current_map.get('stick_left', 'none'), l_x, l_y, res)
-        handle_stick(current_map.get('stick_right', 'none'), r_x, r_y, res)
+                # 处理摇杆移动和虚拟键
+                res = {'mx':0.0, 'my':0.0, 'sx':0.0, 'sy':0.0, 'keys': set()}
+                handle_stick(current_map.get('stick_left', 'none'), l_x, l_y, res)
+                handle_stick(current_map.get('stick_right', 'none'), r_x, r_y, res)
+                
+                # 计算精确到小数点的移动，加上上一次没走完的余地
+                dx_float = res['mx'] * sens * 4.0 + rem_mx
+                dy_float = res['my'] * sens * 4.0 + rem_my
+                sx_float = res['sx'] * sens * 0.05 + rem_sx
+                sy_float = res['sy'] * sens * 0.05 + rem_sy
+                
+                # 提取出实际要走的整数像素
+                dx = int(dx_float)
+                dy = int(dy_float)
+                sx = int(sx_float)
+                sy = int(sy_float)
+                
+                # 把不足 1 像素的小数部分存起来下一次继续累加
+                rem_mx = dx_float - dx
+                rem_my = dy_float - dy
+                rem_sx = sx_float - sx
+                rem_sy = sy_float - sy
+                
+                if dx != 0 or dy != 0:
+                    try: mouse_service.handle_move({'dx': dx, 'dy': dy})
+                    except Exception: pass
+                if sx != 0 or sy != 0:
+                    try: mouse_service.handle_scroll({'dx': sx, 'dy': sy})
+                    except Exception: pass
+                    
+                # 释放不在 target 里的 key
+                for k in list(active_keys):
+                    if k not in res['keys']:
+                        keyboard_service.handle_key_action({'key': k, 'action': 'up'})
+                        active_keys.remove(k)
+                # 按下未在 active 里的 key
+                for k in res['keys']:
+                    if k not in active_keys:
+                        keyboard_service.handle_key_action({'key': k, 'action': 'down'})
+                        active_keys.add(k)
+
+        # 混合睡眠+自旋锁：防止 Windows 下 time.sleep 波浪线误差导致的卡顿抖动
+        elapsed = time.perf_counter() - start_t
+        sleep_amt = frame_time - elapsed
+        if sleep_amt > 0.002: # 留 2ms 的缓冲用来极速自旋
+            time.sleep(sleep_amt - 0.002)
         
-        if res['mx'] != 0 or res['my'] != 0:
-            mouse_service.handle_move({'dx': res['mx'] * sens * 4, 'dy': res['my'] * sens * 4})
-        if res['sx'] != 0 or res['sy'] != 0:
-            mouse_service.handle_scroll({'dx': res['sx'] * sens * 2, 'dy': res['sy'] * sens * 2})
-            
-        # 释放不在 target 里的 key
-        for k in list(active_keys):
-            if k not in res['keys']:
-                keyboard_service.handle_key_action({'key': k, 'action': 'up'})
-                active_keys.remove(k)
-        # 按下未在 active 里的 key
-        for k in res['keys']:
-            if k not in active_keys:
-                keyboard_service.handle_key_action({'key': k, 'action': 'down'})
-                active_keys.add(k)
+        while (time.perf_counter() - start_t) < frame_time:
+            pass
 
 
 def handle_stick(mode, xVal, yVal, res_dict):
