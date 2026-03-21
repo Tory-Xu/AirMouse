@@ -43,3 +43,7 @@ def real_mouse_page():
 @app.route('/b')
 def buttons_page():
     return render_template('buttons.html')
+
+@app.route('/controller')
+def controller_page():
+    return render_template('controller.html')

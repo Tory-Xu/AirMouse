@@ -285,11 +285,6 @@
                     "keys": ""
                 },
                 {
-                    "label": "page",
-                    "emoji": "📄",
-                    "keys": "f"
-                },
-                {
                     "label": "",
                     "emoji": "",
                     "keys": ""
@@ -310,9 +305,14 @@
                     "keys": ""
                 },
                 {
-                    "label": "full",
-                    "emoji": "FS",
-                    "keys": "ctrl,win,f"
+                    "label": "",
+                    "emoji": "",
+                    "keys": ""
+                },
+                {
+                    "label": "",
+                    "emoji": "",
+                    "keys": ""
                 },
                 {
                     "label": "",
@@ -340,9 +340,9 @@
                     "keys": ""
                 },
                 {
-                    "label": "",
-                    "emoji": "",
-                    "keys": ""
+                    "label": "full",
+                    "emoji": "FS",
+                    "keys": "ctrl,win,f"
                 },
                 {
                     "label": "left",
@@ -390,9 +390,9 @@
                     "keys": ""
                 },
                 {
-                    "label": "",
-                    "emoji": "",
-                    "keys": ""
+                    "label": "page",
+                    "emoji": "📄",
+                    "keys": "f"
                 }
             ]
         }
