@@ -126,6 +126,8 @@ body {
     background: #333;
     border: 1px solid #555;
     border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    height: auto;
     color: #fff;
     cursor: pointer;
     text-align: center;
@@ -136,41 +138,41 @@ body {
 
 .gb:active { transform: scale(0.9); background: #555; }
 
-.gb-name { font-size: 12px; font-weight: bold; }
-.gb-val { font-size: 9px; color: #007aff; margin-top: 4px; line-height: 1; background: #000; padding: 2px 4px; border-radius: 4px;}
+.gb-name { font-size: 15px; font-weight: bold; }
+.gb-val { font-size: 11px; color: #007aff; margin-top: 4px; line-height: 1; background: #000; padding: 2px 4px; border-radius: 4px;}
 
 /* Triggers & Bumpers */
-.gb-rt, .gb-r1 { border-radius: 8px; height: 12%; width: 15%; right: 15%; }
+.gb-rt, .gb-r1 { border-radius: 8px; height: 12%; width: 15%; right: 15%; aspect-ratio: auto; }
 .gb-rt { top: -6%; background: #222; }
 .gb-r1 { top: 7%; }
 
-.gb-lt, .gb-l1 { border-radius: 8px; height: 12%; width: 15%; left: 15%; }
+.gb-lt, .gb-l1 { border-radius: 8px; height: 12%; width: 15%; left: 15%; aspect-ratio: auto; }
 .gb-lt { top: -6%; background: #222; }
 .gb-l1 { top: 7%; }
 
 /* D-Pad (Left cluster area) */
 .dpad-area { position: absolute; left: 15%; top: 40%; width: 18%; height: 32%; display: flex; align-items:center; justify-content:center; }
-.gb-up { position: absolute; top: 0; left: 33%; width: 34%; height: 34%; border-radius: 4px; }
-.gb-down { position: absolute; bottom: 0; left: 33%; width: 34%; height: 34%; border-radius: 4px; }
-.gb-left { position: absolute; top: 33%; left: 0; width: 34%; height: 34%; border-radius: 4px; }
-.gb-right { position: absolute; top: 33%; right: 0; width: 34%; height: 34%; border-radius: 4px; }
+.gb-up { position: absolute; top: 0; left: 33%; width: 34%; height: auto; border-radius: 4px; }
+.gb-down { position: absolute; bottom: 0; left: 33%; width: 34%; height: auto; border-radius: 4px; }
+.gb-left { position: absolute; top: 33%; left: 0; width: 34%; height: auto; border-radius: 4px; }
+.gb-right { position: absolute; top: 33%; right: 0; width: 34%; height: auto; border-radius: 4px; }
 
 /* Action Buttons (Right cluster) */
 .act-area { position: absolute; right: 15%; top: 35%; width: 18%; height: 32%; }
-.gb-y { position: absolute; top: 0; left: 33%; width: 34%; height: 34%; }
-.gb-a { position: absolute; bottom: 0; left: 33%; width: 34%; height: 34%; }
-.gb-x { position: absolute; top: 33%; left: 0; width: 34%; height: 34%; }
-.gb-b { position: absolute; top: 33%; right: 0; width: 34%; height: 34%; }
+.gb-y { position: absolute; top: 0; left: 33%; width: 34%; height: auto; }
+.gb-a { position: absolute; bottom: 0; left: 33%; width: 34%; height: auto; }
+.gb-x { position: absolute; top: 33%; left: 0; width: 34%; height: auto; }
+.gb-b { position: absolute; top: 33%; right: 0; width: 34%; height: auto; }
 
 /* Centers */
-.gb-sel { position: absolute; left: 38%; top: 25%; width: 6%; height: 10%; border-radius: 10px; font-size: 8px; }
-.gb-start { position: absolute; right: 38%; top: 25%; width: 6%; height: 10%; border-radius: 10px; font-size: 8px; }
-.gb-guide { position: absolute; left: 45%; top: 15%; width: 10%; height: 18%; background: #111; }
+.gb-sel { position: absolute; left: 38%; top: 25%; width: 6%; height: 10%; border-radius: 10px; font-size: 8px; aspect-ratio: auto; }
+.gb-start { position: absolute; right: 38%; top: 25%; width: 6%; height: 10%; border-radius: 10px; font-size: 8px; aspect-ratio: auto; }
+.gb-guide { position: absolute; left: 45%; top: 15%; width: 10%; height: 18%; background: #111; aspect-ratio: auto; }
 .gb-guide .gb-name { font-size: 10px; color: #555; }
 
 /* Sticks */
-.gb-ls { position: absolute; left: 35%; bottom: 10%; width: 15%; height: 26%; background: #000; border: 2px solid #555; }
-.gb-rs { position: absolute; right: 35%; bottom: 10%; width: 15%; height: 26%; background: #000; border: 2px solid #555; }
+.gb-ls { position: absolute; left: 35%; bottom: 10%; width: 15%; background: #000; border: 2px solid #555; }
+.gb-rs { position: absolute; right: 35%; bottom: 10%; width: 15%; background: #000; border: 2px solid #555; }
 
 /* Stick buttons (L3/R3) */
 .gb-ls-btn { position: absolute; left: 36.5%; bottom: -4%; width: 12%; height: 12%; font-size:8px; border-radius: 6px; padding: 2px; }
@@ -306,6 +308,22 @@ body {
     padding: 0;
 }
 .keyboard-grid button:active { background: #007AFF !important; }
+
+/* Stick Presets Styles (Fixes naked buttons) */
+#stick-presets-area button {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#stick-presets-area button:active { background: #007AFF !important; border-color: #007AFF; }
 
 /* Custom Keys specific styles from keyboard.html */
 .k-f { color: #888; background: #0d0d0d !important; font-size: 10px !important; }

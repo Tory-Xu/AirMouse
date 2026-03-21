@@ -36,6 +36,7 @@ let ctrlData = {
     current: "Default",
     profiles: { "Default": JSON.parse(JSON.stringify(defaultMap)) },
     sens: 5.0,
+    scroll_sens: 5.0,
     deadzone: 0.15
 };
 
@@ -52,6 +53,7 @@ socket.on('gp_macros_loaded', (data) => {
         
         // 补充缺失的默认值
         if(ctrlData.sens === undefined) ctrlData.sens = 5.0;
+        if(ctrlData.scroll_sens === undefined) ctrlData.scroll_sens = 5.0;
         if(ctrlData.deadzone === undefined) ctrlData.deadzone = 0.15;
         if(ctrlData.enabled === undefined) ctrlData.enabled = true;
         if(!ctrlData.profiles[ctrlData.current]) {
@@ -64,6 +66,7 @@ socket.on('gp_macros_loaded', (data) => {
             current: "Default",
             profiles: { "Default": JSON.parse(JSON.stringify(defaultMap)) },
             sens: 5.0,
+            scroll_sens: 5.0,
             deadzone: 0.15,
             enabled: true
         };
@@ -114,6 +117,17 @@ function initUI() {
         saveToServer();
     };
 
+    const scrollSensInput = document.getElementById('param-scroll-sens');
+    const scrollSensVal = document.getElementById('scroll-sens-val');
+    scrollSensInput.value = ctrlData.scroll_sens || 5.0;
+    scrollSensVal.innerText = (ctrlData.scroll_sens || 5.0).toFixed(1);
+
+    scrollSensInput.onchange = (e) => {
+        ctrlData.scroll_sens = parseFloat(e.target.value);
+        scrollSensVal.innerText = ctrlData.scroll_sens.toFixed(1);
+        saveToServer();
+    };
+
     const deadInput = document.getElementById('param-deadzone');
     const deadVal = document.getElementById('dead-val');
     deadInput.value = ctrlData.deadzone || 0.15;
@@ -140,7 +154,23 @@ function updateUIValues() {
     for (let key in currentMap) {
         const el = document.getElementById(`val-${key}`);
         if (el) {
-            el.innerText = MAPPING_NAMES[currentMap[key]] || currentMap[key];
+            let val = currentMap[key];
+            let display = MAPPING_NAMES[val] || val;
+            if (val.includes('+')) {
+                const keys = val.split('+');
+                display = keys.map(k => MAPPING_NAMES[k] || k.replace('key_', '').toUpperCase()).join('+');
+                MAPPING_NAMES[val] = display;
+            }
+            
+            el.innerText = display;
+            
+            if (val === 'none') {
+                el.style.color = '#fff';
+                el.style.background = '#28a745';
+            } else {
+                el.style.color = '#007aff';
+                el.style.background = '#000';
+            }
         }
     }
 }
@@ -207,6 +237,10 @@ function openEdit(keyId, title) {
         document.getElementById('quick-presets-area').style.display = 'none';
     }
     
+    document.getElementById('combo-mode-bar').style.display = isStick ? 'none' : 'flex';
+    document.getElementById('combo-toggle').checked = false;
+    toggleComboMode(false);
+    
     document.getElementById('vkb-modal').style.display = 'flex';
 }
 
@@ -245,9 +279,54 @@ function assignBulk(type) {
     updateUIValues();
 }
 
+let isComboMode = false;
+let currentCombo = [];
+
+function toggleComboMode(checked) {
+    isComboMode = checked;
+    currentCombo = [];
+    document.getElementById('combo-display').style.display = checked ? 'block' : 'none';
+    document.getElementById('combo-confirm-btn').style.display = checked ? 'block' : 'none';
+    document.getElementById('combo-clear-btn').style.display = checked ? 'block' : 'none';
+    document.getElementById('combo-display').innerText = '...等待按下组合...';
+}
+
+function clearCombo() {
+    currentCombo = [];
+    document.getElementById('combo-display').innerText = '...等待按下组合...';
+}
+
+function confirmCombo() {
+    v();
+    if (currentCombo.length === 0) return;
+    const combinedVal = currentCombo.join('+');
+    currentMap[currentEditKey] = combinedVal;
+    
+    const displayNames = currentCombo.map(k => MAPPING_NAMES[k] || k.replace('key_', '').toUpperCase());
+    MAPPING_NAMES[combinedVal] = displayNames.join(' + ');
+    
+    document.getElementById('vkb-modal').style.display = 'none';
+    saveToServer();
+    updateUIValues();
+}
+
 // 虚拟键盘直接绑定回调
 function assignVKey(key) {
     if(!currentEditKey) return;
+    
+    if (isComboMode) {
+        if (['none', 'click_left', 'click_right', 'click_middle', 'mouse', 'scroll', 'scroll_rev', 'wasd', 'hjkl', 'arrows'].includes(key)) {
+            alert('此功能不可用于组合键拼装！仅限常规键盘按键。');
+            return;
+        }
+        const mappedVal = 'key_' + key;
+        if (!currentCombo.includes(mappedVal)) {
+            currentCombo.push(mappedVal);
+        }
+        const displayNames = currentCombo.map(k => MAPPING_NAMES[k] || k.replace('key_', '').toUpperCase());
+        document.getElementById('combo-display').innerText = displayNames.join(' + ');
+        return; // 不直接退出弹窗
+    }
     
     let mappedVal = key;
     if (key !== 'none' && !key.startsWith('click_') && !key.startsWith('scroll') && key !== 'mouse' && key !== 'wasd' && key !== 'arrows' && key !== 'hjkl') {

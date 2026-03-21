@@ -70,14 +70,14 @@ def handle_btn(btn_code, pressed):
     mapping = {
         'BTN_SOUTH': 'btn_0', 'BTN_EAST': 'btn_1', 'BTN_WEST': 'btn_2', 'BTN_NORTH': 'btn_3',
         'BTN_TL': 'btn_4', 'BTN_TR': 'btn_5', 'BTN_THUMBL': 'btn_10', 'BTN_THUMBR': 'btn_11',
-        'BTN_SELECT': 'btn_8', 'BTN_START': 'btn_9', 'BTN_MODE': 'btn_16'
+        'BTN_SELECT': 'btn_9', 'BTN_START': 'btn_8', 'BTN_MODE': 'btn_16'
     }
     
     cfgId = mapping.get(btn_code)
     if not cfgId: return
     
     data = get_current_cfg()
-    if not data or not data.get('current'): return
+    if not data or not data.get('current') or not data.get('enabled', True): return
     current_map = data['profiles'][data['current']]
     action = current_map.get(cfgId, 'none')
     
@@ -95,8 +95,14 @@ def execute_action(action, pressed):
         except Exception:
             pass
     elif action.startswith('key_'):
-        mapped_key = action.replace('key_', '')
-        keyboard_service.handle_key_action({'key': mapped_key, 'action': 'down' if pressed else 'up'})
+        if '+' in action:
+            if pressed:
+                keys = [k.replace('key_', '') for k in action.split('+')]
+                # 交由专门的组合键接口，实现干净利落的顺序按下并抬起，防止因并发复读导致错乱
+                keyboard_service.handle_combo({'keys': keys})
+        else:
+            mapped_key = action.replace('key_', '')
+            keyboard_service.handle_key_action({'key': mapped_key, 'action': 'down' if pressed else 'up'})
 
 def process_continuous():
     """持续处理摇杆坐标，执行精准高帧率平滑移动 (固定 160Hz)"""
@@ -122,6 +128,7 @@ def process_continuous():
             if data and data.get('current') and data.get('enabled', True):
                 current_map = data['profiles'][data['current']]
                 sens = float(data.get('sens', 5.0))
+                scroll_sens = float(data.get('scroll_sens', 5.0))
                 dz = float(data.get('deadzone', 0.15))
                 
                 # 解析摇杆 (-1.0 to 1.0)
@@ -158,8 +165,8 @@ def process_continuous():
                 
                 dx_float = res['mx'] * sens * 4.0 + rem_mx
                 dy_float = res['my'] * sens * 4.0 + rem_my
-                sx_float = res['sx'] * sens * 0.05 + rem_sx
-                sy_float = res['sy'] * sens * 0.05 + rem_sy
+                sx_float = res['sx'] * scroll_sens * 0.05 + rem_sx
+                sy_float = res['sy'] * scroll_sens * 0.05 + rem_sy
                 
                 dx, dy = int(dx_float), int(dy_float)
                 sx, sy = int(sx_float), int(sy_float)
