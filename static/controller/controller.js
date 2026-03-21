@@ -12,8 +12,9 @@ const defaultMap = {
 
 const MAPPING_NAMES = {
     "none": "无",
-    "mouse": "鼠标",
+    "mouse": "光标",
     "scroll": "滚轮",
+    "scroll_rev": "滚轮反向",
     "wasd": "WASD",
     "hjkl": "HJKL",
     "arrows": "方向键",
@@ -50,8 +51,9 @@ socket.on('gp_macros_loaded', (data) => {
         ctrlData = data;
         
         // 补充缺失的默认值
-        if(!ctrlData.sens) ctrlData.sens = 5.0;
-        if(!ctrlData.deadzone) ctrlData.deadzone = 0.15;
+        if(ctrlData.sens === undefined) ctrlData.sens = 5.0;
+        if(ctrlData.deadzone === undefined) ctrlData.deadzone = 0.15;
+        if(ctrlData.enabled === undefined) ctrlData.enabled = true;
         if(!ctrlData.profiles[ctrlData.current]) {
             ctrlData.current = Object.keys(ctrlData.profiles)[0];
         }
@@ -62,7 +64,8 @@ socket.on('gp_macros_loaded', (data) => {
             current: "Default",
             profiles: { "Default": JSON.parse(JSON.stringify(defaultMap)) },
             sens: 5.0,
-            deadzone: 0.15
+            deadzone: 0.15,
+            enabled: true
         };
         saveToServer();
     }
@@ -72,8 +75,26 @@ socket.on('gp_macros_loaded', (data) => {
     document.getElementById('gp-status').classList.add('connected');
     
     initUI();
+    updateMasterSwitch();
     updateUIValues();
 });
+
+function toggleMapping() {
+    ctrlData.enabled = (ctrlData.enabled === false) ? true : false;
+    updateMasterSwitch();
+    saveToServer();
+}
+
+function updateMasterSwitch() {
+    const sw = document.getElementById('master-switch-btn');
+    if(ctrlData.enabled !== false) {
+        sw.className = 'master-switch active';
+        sw.innerText = '手柄映射状态: 开启 ✅';
+    } else {
+        sw.className = 'master-switch';
+        sw.innerText = '手柄映射状态: 暂停 ⏸️';
+    }
+}
 
 function saveToServer() {
     socket.emit('save_gp_macros', ctrlData);
@@ -177,6 +198,15 @@ function openEdit(keyId, title) {
     document.getElementById('stick-presets-area').style.display = isStick ? 'flex' : 'none';
     document.getElementById('vk-grid').style.display = isStick ? 'none' : 'flex';
     
+    const isDPad = ['btn_12', 'btn_13', 'btn_14', 'btn_15'].includes(keyId);
+    const isABXY = ['btn_0', 'btn_1', 'btn_2', 'btn_3'].includes(keyId);
+    if(isDPad || isABXY) {
+        document.getElementById('quick-presets-area').style.display = 'flex';
+        document.getElementById('quick-preset-title').innerText = isDPad ? '💡 快速填充整个十字键组:' : '💡 快速填充整个 ABXY 键组:';
+    } else {
+        document.getElementById('quick-presets-area').style.display = 'none';
+    }
+    
     document.getElementById('vkb-modal').style.display = 'flex';
 }
 
@@ -184,12 +214,43 @@ function closeEdit() {
     document.getElementById('vkb-modal').style.display = 'none';
 }
 
+function assignBulk(type) {
+    if(!currentEditKey) return;
+    
+    // 十字键组
+    if (['btn_12', 'btn_13', 'btn_14', 'btn_15'].includes(currentEditKey)) {
+        if(type === 'arrows') {
+            currentMap['btn_12'] = 'key_up'; currentMap['btn_13'] = 'key_down';
+            currentMap['btn_14'] = 'key_left'; currentMap['btn_15'] = 'key_right';
+        }
+        if(type === 'wasd') {
+            currentMap['btn_12'] = 'key_w'; currentMap['btn_13'] = 'key_s';
+            currentMap['btn_14'] = 'key_a'; currentMap['btn_15'] = 'key_d';
+        }
+    }
+    // ABXY组 (Y=3, A=0, X=2, B=1)
+    if (['btn_0', 'btn_1', 'btn_2', 'btn_3'].includes(currentEditKey)) {
+        if(type === 'arrows') {
+            currentMap['btn_3'] = 'key_up'; currentMap['btn_0'] = 'key_down';
+            currentMap['btn_2'] = 'key_left'; currentMap['btn_1'] = 'key_right';
+        }
+        if(type === 'wasd') {
+            currentMap['btn_3'] = 'key_w'; currentMap['btn_0'] = 'key_s';
+            currentMap['btn_2'] = 'key_a'; currentMap['btn_1'] = 'key_d';
+        }
+    }
+    v();
+    document.getElementById('vkb-modal').style.display = 'none';
+    saveToServer();
+    updateUIValues();
+}
+
 // 虚拟键盘直接绑定回调
 function assignVKey(key) {
     if(!currentEditKey) return;
     
     let mappedVal = key;
-    if (key !== 'none' && !key.startsWith('click_') && key !== 'mouse' && key !== 'scroll' && key !== 'wasd' && key !== 'arrows' && key !== 'hjkl') {
+    if (key !== 'none' && !key.startsWith('click_') && !key.startsWith('scroll') && key !== 'mouse' && key !== 'wasd' && key !== 'arrows' && key !== 'hjkl') {
         mappedVal = 'key_' + key;
     }
     

@@ -23,8 +23,9 @@
     </div>
 
     <div class="main-layout">
-        
         <div class="controls-wrapper">
+            <div id="master-switch-btn" class="master-switch active" onclick="v(); toggleMapping()">配置映射状态: 开启 ✅ </div>
+
             <div class="sens-group">
                 <label>手柄灵敏度: <span id="sens-val">5.0</span></label>
                 <input type="range" id="param-sens" min="1" max="20" step="1" value="5">
@@ -89,10 +90,18 @@
             <div id="stick-presets-area" style="display:none; gap: 8px; flex-wrap: wrap; justify-content:center;">
                 <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #222;" onclick="v(); assignVKey('none')">🚫 禁用摇杆</button>
                 <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #007AFF;" onclick="v(); assignVKey('mouse')">🖱️ 光标移动 (鼠标)</button>
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px; background: #007AFF;" onclick="v(); assignVKey('scroll')">🖱️ 滚轮翻页 (四向)</button>
-                <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;" onclick="v(); assignVKey('arrows')">⌨️ 映射方向键</button>
+                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;" onclick="v(); assignVKey('scroll')">🖱️ 滚轮翻页 (自然方向)</button>
+                <button class="k-sym" style="flex:auto; padding: 15px; background: #005bb5;" onclick="v(); assignVKey('scroll_rev')">🖱️ 滚轮 (指向方向)</button>
+                <button class="k-sym" style="flex:auto; padding: 15px;" onclick="v(); assignVKey('arrows')">⌨️ 映射方向键</button>
                 <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;" onclick="v(); assignVKey('wasd')">⌨️ 映射 WASD</button>
                 <button class="k-sym" style="flex:auto; padding: 20px; font-size: 15px;" onclick="v(); assignVKey('hjkl')">⌨️ 映射 HJKL</button>
+            </div>
+
+            <!-- Quick Presets for ABXY/D-PAD -->
+            <div id="quick-presets-area" style="display:none; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; justify-content:center; background: #222; padding: 10px; border-radius: 8px;">
+                <span id="quick-preset-title" style="flex:100%; font-size:12px; color:#888; text-align:center;">💡 快速覆盖整个按键组的配置:</span>
+                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;" onclick="v(); assignBulk('arrows')">填入: 方向键</button>
+                <button class="k-sym" style="flex:auto; padding: 10px; font-size:13px;" onclick="v(); assignBulk('wasd')">填入: WASD</button>
             </div>
 
             <!-- Full Keyboard & Mouse for Buttons -->
@@ -143,7 +152,7 @@
     </div>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="/static/controller/controller.js?v=4"></script>
+    <script src="/static/controller/controller.js?v=5"></script>
 </body>
 
 </html>
