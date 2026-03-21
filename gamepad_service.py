@@ -130,6 +130,7 @@ def process_continuous():
                 sens = float(data.get('sens', 5.0))
                 scroll_sens = float(data.get('scroll_sens', 5.0))
                 dz = float(data.get('deadzone', 0.15))
+                curve_type = data.get('curve', 'medium')
                 
                 # 解析摇杆 (-1.0 to 1.0)
                 l_x = apply_dz(state['ABS_X'], 32767, dz)
@@ -163,8 +164,20 @@ def process_continuous():
                 handle_stick(current_map.get('stick_left', 'none'), l_x, l_y, res)
                 handle_stick(current_map.get('stick_right', 'none'), r_x, r_y, res)
                 
-                dx_float = res['mx'] * sens * 4.0 + rem_mx
-                dy_float = res['my'] * sens * 4.0 + rem_my
+                # 摇杆响应曲线逻辑
+                mx_raw, my_raw = res['mx'], res['my']
+                mag = (mx_raw**2 + my_raw**2)**0.5
+                accel = 1.0
+                if mag > 0.01:
+                    if curve_type == 'linear':
+                        accel = 1.0
+                    elif curve_type == 'aggressive':
+                        accel = 1.0 + (mag ** 2) * 5.0 # 强化加速
+                    else: # medium
+                        accel = 1.0 + (mag ** 1.5) * 2.5 # 标准加速
+                
+                dx_float = mx_raw * accel * sens * 4.0 + rem_mx
+                dy_float = my_raw * accel * sens * 4.0 + rem_my
                 sx_float = res['sx'] * scroll_sens * 0.05 + rem_sx
                 sy_float = res['sy'] * scroll_sens * 0.05 + rem_sy
                 

@@ -37,7 +37,8 @@ let ctrlData = {
     profiles: { "Default": JSON.parse(JSON.stringify(defaultMap)) },
     sens: 5.0,
     scroll_sens: 5.0,
-    deadzone: 0.15
+    deadzone: 0.15,
+    curve: "medium"
 };
 
 let currentMap = ctrlData.profiles[ctrlData.current];
@@ -55,6 +56,7 @@ socket.on('gp_macros_loaded', (data) => {
         if(ctrlData.sens === undefined) ctrlData.sens = 5.0;
         if(ctrlData.scroll_sens === undefined) ctrlData.scroll_sens = 5.0;
         if(ctrlData.deadzone === undefined) ctrlData.deadzone = 0.15;
+        if(ctrlData.curve === undefined) ctrlData.curve = "medium";
         if(ctrlData.enabled === undefined) ctrlData.enabled = true;
         if(!ctrlData.profiles[ctrlData.current]) {
             ctrlData.current = Object.keys(ctrlData.profiles)[0];
@@ -117,25 +119,24 @@ function initUI() {
         saveToServer();
     };
 
-    const scrollSensInput = document.getElementById('param-scroll-sens');
-    const scrollSensVal = document.getElementById('scroll-sens-val');
-    scrollSensInput.value = ctrlData.scroll_sens || 5.0;
-    scrollSensVal.innerText = (ctrlData.scroll_sens || 5.0).toFixed(1);
+    const curveSelect = document.getElementById('param-curve');
+    curveSelect.value = ctrlData.curve || 'medium';
+    curveSelect.onchange = (e) => {
+        ctrlData.curve = e.target.value;
+        saveToServer();
+    };
 
+    const scrollSensInput = document.getElementById('param-scroll-sens');
+    scrollSensInput.value = ctrlData.scroll_sens || 10;
     scrollSensInput.onchange = (e) => {
         ctrlData.scroll_sens = parseFloat(e.target.value);
-        scrollSensVal.innerText = ctrlData.scroll_sens.toFixed(1);
         saveToServer();
     };
 
     const deadInput = document.getElementById('param-deadzone');
-    const deadVal = document.getElementById('dead-val');
     deadInput.value = ctrlData.deadzone || 0.15;
-    deadVal.innerText = (ctrlData.deadzone || 0.15).toFixed(2);
-
     deadInput.onchange = (e) => {
         ctrlData.deadzone = parseFloat(e.target.value);
-        deadVal.innerText = ctrlData.deadzone.toFixed(2);
         saveToServer();
     };
 
@@ -240,6 +241,7 @@ function openEdit(keyId, title) {
     document.getElementById('combo-toggle').checked = false;
     toggleComboMode(false);
     
+    document.getElementById('manual-key-input').value = '';
     document.getElementById('vkb-modal').style.display = 'flex';
 }
 
@@ -307,6 +309,15 @@ function confirmCombo() {
     document.getElementById('vkb-modal').style.display = 'none';
     saveToServer();
     updateUIValues();
+}
+
+// 手动输入按键绑定
+function assignManualKey() {
+    const inputEl = document.getElementById('manual-key-input');
+    const val = inputEl.value.trim().toLowerCase();
+    if (!val) return;
+    assignVKey(val);
+    inputEl.value = '';
 }
 
 // 虚拟键盘直接绑定回调

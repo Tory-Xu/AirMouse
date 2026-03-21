@@ -3,10 +3,10 @@
     "profiles": {
         "Default": {
             "stick_left": "scroll_rev",
-            "btn_5": "click_right",
-            "btn_7": "click_left",
+            "btn_5": "key_[",
+            "btn_7": "click_right",
             "stick_right": "mouse",
-            "btn_4": "key_tab",
+            "btn_4": "click_middle",
             "btn_11": "key_enter",
             "btn_10": "key_win",
             "btn_1": "key_esc",
@@ -16,7 +16,7 @@
             "btn_15": "key_right",
             "btn_0": "key_space",
             "btn_9": "key_alt+key_q",
-            "btn_6": "key_ctrl",
+            "btn_6": "none",
             "btn_8": "key_win+key_tab",
             "btn_16": "none"
         },
@@ -42,8 +42,9 @@
             "btn_2": "none"
         }
     },
-    "sens": 5,
-    "deadzone": 0.05,
+    "sens": 3,
+    "deadzone": 0.02,
     "enabled": true,
-    "scroll_sens": 7
+    "scroll_sens": 13,
+    "curve": "medium"
 }

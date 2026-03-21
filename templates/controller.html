@@ -26,17 +26,31 @@
         <div class="controls-wrapper">
             <div id="master-switch-btn" class="master-switch active" onclick="v(); toggleMapping()">配置映射状态: 开启 ✅ </div>
 
-            <div class="sens-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; margin-bottom:4px;">手柄灵敏度: <span id="sens-val">5.0</span></label>
-                <input type="range" id="param-sens" min="1" max="20" step="1" value="5" style="height:4px;">
+            <div class="sens-group" style="margin-bottom:12px; display: flex; align-items:center; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; margin-bottom:4px;">鼠标灵敏度: <span id="sens-val">3.0</span></label>
+                    <input type="range" id="param-sens" min="1" max="20" step="1" value="3" style="height:4px; width:100%;">
+                </div>
+                <div style="width:80px;">
+                    <label style="font-size:11px; color:#888; margin-bottom:4px;">响应曲线</label>
+                    <select id="param-curve" style="background:#222; border:1px solid #444; color:white; font-size:11px; padding:3px; border-radius:4px; width:100%;">
+                        <option value="linear">线性 (1x)</option>
+                        <option value="medium">标准 (中)</option>
+                        <option value="aggressive">强化 (强)</option>
+                    </select>
+                </div>
             </div>
-            <div class="sens-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; margin-bottom:4px;">滚轮翻页速度: <span id="scroll-sens-val">5.0</span></label>
-                <input type="range" id="param-scroll-sens" min="1" max="30" step="1" value="5" style="height:4px;">
-            </div>
-            <div class="sens-group" style="margin-bottom:8px;">
-                <label style="font-size:12px; margin-bottom:4px;">摇杆死区 (防漂移): <span id="dead-val">0.15</span></label>
-                <input type="range" id="param-deadzone" min="0.05" max="0.5" step="0.05" value="0.15" style="height:4px;">
+            <div style="display: flex; gap: 15px; margin-bottom: 12px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; display:block; margin-bottom:4px; color:#888;">滚轮倍率 (1-50)</label>
+                    <input type="number" id="param-scroll-sens" min="1" max="50" step="1" value="10" 
+                        style="width:100%; height:32px; background:#111; border:1px solid #333; color:#007AFF; font-weight:bold; border-radius:6px; padding: 0 10px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; display:block; margin-bottom:4px; color:#888;">摇杆死区 (0.01-0.5)</label>
+                    <input type="number" id="param-deadzone" min="0" max="0.5" step="0.01" value="0.15" 
+                        style="width:100%; height:32px; background:#111; border:1px solid #333; color:#007AFF; font-weight:bold; border-radius:6px; padding: 0 10px;">
+                </div>
             </div>
             
             <p style="text-align: center; font-size: 11px; color: #888; margin-top: 5px;">点击下方手柄元素分配按键功能</p>
@@ -129,11 +143,26 @@
                     <button class="k-sym" style="flex:1; background:#007AFF; font-size: 13px;" onclick="v(); assignVKey('click_middle')">🖱️ 鼠标中键</button>
                 </div>
                 <!-- 键盘复刻 -->
+                <div class="row" style="margin-bottom: 8px;">
+                    <div style="flex:1; display:flex; gap:6px; background:#1a1a1a; padding:4px; border-radius:6px; border:1px solid #333;">
+                        <input type="text" id="manual-key-input" placeholder="手动输入按键名 (如: f11, home)" 
+                            style="flex:1; background:transparent; border:none; color:#00ff00; font-size:12px; padding:0 8px; outline:none;">
+                        <button onclick="v(); assignManualKey()" 
+                            style="min-height:30px; height:30px; padding:0 15px; background:#007AFF; color:white; border:none; font-size:11px;">绑定输入</button>
+                    </div>
+                </div>
+
+                <!-- 键盘复刻 -->
                 <div class="row">
                     <button class="k-f esc" onclick="v(); assignVKey('esc')">ESC</button>
                     <button class="k-f" onclick="v(); assignVKey('f1')">F1</button><button class="k-f" onclick="v(); assignVKey('f2')">F2</button><button class="k-f" onclick="v(); assignVKey('f3')">F3</button><button class="k-f" onclick="v(); assignVKey('f4')">F4</button>
-                    <button class="k-f" onclick="v(); assignVKey('f5')">F5</button><button class="k-f" onclick="v(); assignVKey('f6')">F6</button><button class="k-f" onclick="v(); assignVKey('f7')">F7</button><button class="k-f" onclick="v(); assignVKey('f8')">F8</button>
+                    <button class="k-f" onclick="v(); assignVKey('f5')">F5</button><button class="k-f" onclick="v(); assignVKey('f6')">F6</button>
                     <button class="k-f" style="color:#ff3b30;" onclick="v(); assignVKey('delete')">DEL</button>
+                </div>
+                <div class="row">
+                    <button class="k-f" onclick="v(); assignVKey('f7')">F7</button><button class="k-f" onclick="v(); assignVKey('f8')">F8</button>
+                    <button class="k-f" onclick="v(); assignVKey('f9')">F9</button><button class="k-f" onclick="v(); assignVKey('f10')">F10</button>
+                    <button class="k-f" onclick="v(); assignVKey('f11')">F11</button><button class="k-f" onclick="v(); assignVKey('f12')">F12</button>
                 </div>
                 <div class="row">
                     <button class="k-esc" onclick="v(); assignVKey('`')">`</button>
