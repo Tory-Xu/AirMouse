@@ -88,7 +88,44 @@ function toggleMapping() {
     ctrlData.enabled = (ctrlData.enabled === false) ? true : false;
     updateMasterSwitch();
     saveToServer();
+};
+
+function refreshGamepads() {
+    socket.emit('get_gamepads');
 }
+
+function selectGamepad(index) {
+    socket.emit('select_gamepad', parseInt(index));
+}
+
+socket.on('gamepads_list', (list) => {
+    const sel = document.getElementById('gp-select');
+    if(!sel) return;
+    sel.innerHTML = '';
+    if(list.length === 0) {
+        sel.innerHTML = '<option value="0">未发现设备</option>';
+    } else {
+        list.forEach(gp => {
+            const opt = document.createElement('option');
+            opt.value = gp.index;
+            opt.innerText = gp.name;
+            sel.appendChild(opt);
+        });
+    }
+});
+
+socket.on('gp_status', (data) => {
+    const statusEl = document.getElementById('gp-status');
+    if(!statusEl) return;
+    if(data.connected) {
+        statusEl.innerHTML = `<span style="color:#00ff00">🟢 已连接: ${data.name}</span>`;
+    } else {
+        statusEl.innerHTML = `<span style="color:#ff3b30">🔴 ${data.name || "等待连接"}</span>`;
+    }
+});
+
+// 初始刷新一次设备列表
+setTimeout(refreshGamepads, 1000);
 
 function updateMasterSwitch() {
     const sw = document.getElementById('master-switch-btn');

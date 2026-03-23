@@ -1,5 +1,7 @@
 import platform
 import os
+import threading
+import time
 
 # macOS 隐藏 Dock 图标逻辑
 if platform.system() == 'Darwin':
@@ -24,6 +26,16 @@ import gamepad_service
 
 # 启动手柄后台服务 (如果已安装 inputs)
 gamepad_service.start_threads()
+
+def status_thread():
+    while True:
+        socketio.emit('gp_status', {
+            'connected': gamepad_service.gamepad_connected,
+            'name': gamepad_service.gamepad_name
+        })
+        time.sleep(1)
+
+threading.Thread(target=status_thread, daemon=True).start()
 
 # --- SocketIO 事件绑定 ---
 
@@ -50,6 +62,16 @@ def handle_gp_load():
 def handle_gp_save(data):
     config_manager.save_gp_macros(data)
     gamepad_service.update_config(data)
+
+@socketio.on('get_gamepads')
+def handle_get_gps():
+    gps = gamepad_service.get_gamepad_list()
+    socketio.emit('gamepads_list', gps)
+
+@socketio.on('select_gamepad')
+def handle_select_gp(index):
+    gamepad_service.selected_index = index
+    handle_get_gps() # 刷新状态
 
 # 鼠标事件
 @socketio.on('move')

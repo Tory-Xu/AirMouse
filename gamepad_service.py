@@ -37,13 +37,40 @@ def get_current_cfg():
         _cached_cfg = config_manager.load_gp_macros()
     return _cached_cfg
 
+# 当前选中的手柄索引
+selected_index = 0
+gamepad_name = "未连接"
+
+def get_gamepad_list():
+    if inputs is None: return []
+    try:
+        # 强制刷新设备列表
+        # 注意: inputs 库本身缓存了设备，这里可能需要一种强制刷新的手段或是调用其内部逻辑
+        # 在 Windows 上通常需要重新 import 或重新实例化
+        return [{"name": gp.name, "index": i} for i, gp in enumerate(inputs.devices.gamepads)]
+    except Exception:
+        return []
+
 def poll_gamepad_state():
     """纯粹的输入读取线程"""
-    global gamepad_connected
+    global gamepad_connected, selected_index, gamepad_name
     while True:
-        if inputs is None: return
+        if inputs is None: 
+            time.sleep(5)
+            continue
         try:
-            events = inputs.get_gamepad()
+            gps = inputs.devices.gamepads
+            if not gps or selected_index >= len(gps):
+                gamepad_connected = False
+                gamepad_name = "未连接"
+                time.sleep(2)
+                continue
+            
+            target_gp = gps[selected_index]
+            gamepad_name = target_gp.name
+            
+            # 使用特定手柄读取
+            events = target_gp.read()
             gamepad_connected = True
             for event in events:
                 if event.ev_type == 'Absolute':
@@ -52,11 +79,13 @@ def poll_gamepad_state():
                     else: state[event.code] = event.state
                 elif event.ev_type == 'Key':
                     handle_btn(event.code, event.state == 1)
-        except inputs.UnpluggedError:
+        except (inputs.UnpluggedError, IndexError):
             gamepad_connected = False
+            gamepad_name = "已断开"
             time.sleep(2)
         except Exception as e:
             gamepad_connected = False
+            gamepad_name = f"错误: {str(e)[:20]}"
             time.sleep(1)
 
 def apply_dz(val, max_val, deadzone=0.15):

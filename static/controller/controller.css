@@ -45,15 +45,32 @@ body {
     gap: 5px;
 }
 
-#profile-select {
-    background: #111;
-    border: 1px solid #333;
-    color: rgb(136, 133, 133);
+.header select {
+    background: #000;
+    border: 1px solid #444;
+    color: #007AFF; /* 蓝色字体区分功能 */
     font-weight: bold;
-    padding: 4px 6px;
+    padding: 4px 8px;
     border-radius: 6px;
-    max-width: 90px;
-    font-size: 12px;
+    font-size: 11px;
+    transition: all 0.2s;
+    outline: none;
+    cursor: pointer;
+}
+
+.header select:focus {
+    border-color: #007AFF;
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.3);
+}
+
+#profile-select {
+    color: #888 !important;
+    max-width: 100px;
+}
+
+#gp-select {
+    max-width: 130px;
+    border-color: #007AFF55;
 }
 
 .status {

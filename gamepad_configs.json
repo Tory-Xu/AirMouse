@@ -19,8 +19,8 @@
             "btn_6": "key_f11",
             "btn_8": "key_win+key_tab",
             "btn_16": "none",
-            "btn_2": "key_page_down",
-            "btn_3": "key_page_up"
+            "btn_2": "key_x",
+            "btn_3": "key_f"
         },
         "抖音": {
             "stick_left": "scroll_rev",
