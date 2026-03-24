@@ -1,5 +1,5 @@
 {
-    "current": "抖音",
+    "current": "Default",
     "profiles": {
         "Default": {
             "stick_left": "scroll_rev",
@@ -16,11 +16,11 @@
             "btn_15": "key_right",
             "btn_0": "key_space",
             "btn_9": "key_alt+key_q",
-            "btn_6": "key_f11",
+            "btn_6": "click_left",
             "btn_8": "key_win+key_tab",
             "btn_16": "none",
             "btn_2": "key_x",
-            "btn_3": "key_f"
+            "btn_3": "key_f11"
         },
         "抖音": {
             "stick_left": "scroll_rev",
