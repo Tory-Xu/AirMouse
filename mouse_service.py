@@ -47,9 +47,12 @@ def handle_mid_up():
     mouse.release(Button.middle)
 
 def handle_scroll(data):
+    # dx: 水平, dy: 垂直
+    dx = data.get('dx', 0)
+    dy = data.get('dy', 0)
+    
     # macOS 滚动方向通常与 Windows 相反
-    dy = data['dy']
     if platform.system() == 'Darwin':
-        mouse.scroll(0, -dy)
+        mouse.scroll(-dx, -dy)
     else:
-        mouse.scroll(0, dy)
+        mouse.scroll(dx, dy)

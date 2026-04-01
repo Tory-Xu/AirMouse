@@ -203,6 +203,38 @@ def windows_loop():
             rm, rk = {'mx':0.0,'my':0.0,'sx':0.0,'sy':0.0}, set()
             handle_stick(cur_map.get('stick_left', 'none'), lx, -ly, rm, rk)
             handle_stick(cur_map.get('stick_right', 'none'), rx, -ry, rm, rk)
+
+            # 持续触发型按键处理 (滚轮/移动等)
+            btn_scroll_step = 0.5  # 基准步进量
+            # 检查 LT/RT
+            if lt_p:
+                act = cur_map.get('btn_6', 'none')
+                if act == 'scroll_up': rm['sy'] += btn_scroll_step
+                if act == 'scroll_down': rm['sy'] -= btn_scroll_step
+            if rt_p:
+                act = cur_map.get('btn_7', 'none')
+                if act == 'scroll_up': rm['sy'] += btn_scroll_step
+                if act == 'scroll_down': rm['sy'] -= btn_scroll_step
+            # 检查 Dpad
+            for cid, is_p in [('btn_12',u), ('btn_13',d), ('btn_14',l), ('btn_15',r)]:
+                if is_p:
+                    act = cur_map.get(cid, 'none')
+                    if act == 'scroll_up': rm['sy'] += btn_scroll_step
+                    if act == 'scroll_down': rm['sy'] -= btn_scroll_step
+            # 检查其他标准按钮 (ABXY, LB, RB, SELECT, START, L3, R3)
+            # BTN_MAP_XIN: { 0x1000: 'BTN_SOUTH', ... }
+            # mapping (in handle_btn): { 'BTN_SOUTH': 'btn_0', ... }
+            xin_to_cfg = {
+                0x1000: 'btn_0', 0x2000: 'btn_1', 0x4000: 'btn_2', 0x8000: 'btn_3',
+                0x0100: 'btn_4', 0x0200: 'btn_5', 0x0040: 'btn_10', 0x0080: 'btn_11',
+                0x0020: 'btn_8', 0x0010: 'btn_9'
+            }
+            for bit, cid in xin_to_cfg.items():
+                if current_buttons & bit:
+                    act = cur_map.get(cid, 'none')
+                    if act == 'scroll_up': rm['sy'] += btn_scroll_step
+                    if act == 'scroll_down': rm['sy'] -= btn_scroll_step
+
             mag = (rm['mx']**2 + rm['my']**2)**0.5
             acc = 1.0 + (mag**2 * 5.0) if curve == 'aggressive' else (1.0 + mag**1.5 * 2.5 if curve == 'medium' else 1.0)
             dfx, dfy = rm['mx']*acc*sens*4.0+rem_mx, rm['my']*acc*sens*4.0+rem_my

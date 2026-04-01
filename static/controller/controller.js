@@ -21,6 +21,8 @@ const MAPPING_NAMES = {
     "click_left": "左键",
     "click_right": "右键",
     "click_middle": "中键",
+    "scroll_up": "滚轮上",
+    "scroll_down": "滚轮下",
     "drag": "拖拽"
 };
 
@@ -348,6 +350,10 @@ function assignBulk(type) {
             currentMap['btn_12'] = 'key_w'; currentMap['btn_13'] = 'key_s';
             currentMap['btn_14'] = 'key_a'; currentMap['btn_15'] = 'key_d';
         }
+        if(type === 'hjkl') {
+            currentMap['btn_12'] = 'key_k'; currentMap['btn_13'] = 'key_j';
+            currentMap['btn_14'] = 'key_h'; currentMap['btn_15'] = 'key_l';
+        }
     }
     // ABXY组 (Y=3, A=0, X=2, B=1)
     if (['btn_0', 'btn_1', 'btn_2', 'btn_3'].includes(currentEditKey)) {
@@ -358,6 +364,10 @@ function assignBulk(type) {
         if(type === 'wasd') {
             currentMap['btn_3'] = 'key_w'; currentMap['btn_0'] = 'key_s';
             currentMap['btn_2'] = 'key_a'; currentMap['btn_1'] = 'key_d';
+        }
+        if(type === 'hjkl') {
+            currentMap['btn_3'] = 'key_k'; currentMap['btn_0'] = 'key_j';
+            currentMap['btn_2'] = 'key_h'; currentMap['btn_1'] = 'key_l';
         }
     }
     v();

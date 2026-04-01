@@ -1,5 +1,5 @@
 {
-    "current": "Default",
+    "current": "小红书",
     "profiles": {
         "Default": {
             "stick_left": "scroll_rev",
@@ -35,13 +35,13 @@
             "btn_13": "key_down",
             "btn_14": "key_left",
             "btn_15": "key_right",
-            "btn_0": "key_space",
-            "btn_9": "none",
+            "btn_0": "click_left",
+            "btn_9": "key_enter",
             "btn_6": "key_ctrl",
-            "btn_8": "key_alt+key_tab",
+            "btn_8": "key_win+key_tab",
             "btn_16": "none",
-            "btn_3": "none",
-            "btn_2": "none"
+            "btn_3": "key_space",
+            "btn_2": "key_f"
         },
         "x": {
             "stick_left": "arrows",
@@ -63,10 +63,31 @@
             "btn_16": "none",
             "btn_3": "key_s",
             "btn_2": "key_z"
+        },
+        "小红书": {
+            "stick_left": "scroll_rev",
+            "btn_5": "key_right",
+            "btn_7": "scroll_down",
+            "stick_right": "mouse",
+            "btn_4": "key_left",
+            "btn_11": "key_enter",
+            "btn_10": "key_win",
+            "btn_1": "key_esc",
+            "btn_12": "key_k",
+            "btn_13": "key_j",
+            "btn_14": "key_h",
+            "btn_15": "key_l",
+            "btn_0": "key_space",
+            "btn_9": "key_enter",
+            "btn_6": "scroll_up",
+            "btn_8": "key_win+key_tab",
+            "btn_16": "none",
+            "btn_3": "key_d",
+            "btn_2": "key_z"
         }
     },
     "sens": 3,
-    "deadzone": 0.02,
+    "deadzone": 0.06,
     "enabled": true,
     "scroll_sens": 13,
     "curve": "medium"
