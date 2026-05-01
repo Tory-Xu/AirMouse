@@ -1,6 +1,7 @@
 @echo off
-echo 正在检查 Python 依赖...
+echo checking python dependencies...
 pip install flask flask-socketio pyOpenSSL pynput psutil 
+cd /d "%~dp0"
 start https://localhost:5888
 python server.py
 pause

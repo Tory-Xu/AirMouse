@@ -18,6 +18,10 @@ def get_all_ip_addresses():
 
 @app.route('/')
 def index():
+    return render_template('dashboard.html')
+
+@app.route('/touchpad')
+def touchpad_page():
     return render_template('index.html')
 
 @app.route('/k')
