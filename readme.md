@@ -46,17 +46,20 @@ python一键启动，无需安装手机客户端。
 * **Python 3.x**
 
 ## 🚀 快速启动
+> 1 安装python3.11 ， 2 双击直接启动 AirMouseserver.bat ，会自动检查依赖和启动服务器。  
+> 3 如果需要控制高权限程序，需要使用管理员权限启动。
 
  **安装依赖**：
 ```bash
-pip install -r requirements.txt
+pip install -r requirments.txt
 ```
-
 
  **运行服务端**：
 ```bash
 python server.py
 ```
+
+
 
 
  **连接**：
