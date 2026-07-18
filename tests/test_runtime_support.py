@@ -39,6 +39,32 @@ class AppPathsTests(unittest.TestCase):
 
 
 class ConfigManagerTests(unittest.TestCase):
+    def test_save_macros_does_not_fail_on_non_unicode_console(self):
+        class Cp1252Console:
+            encoding = 'cp1252'
+
+            def __init__(self):
+                self.messages = []
+
+            def write(self, message):
+                message.encode(self.encoding)
+                self.messages.append(message)
+
+            def flush(self):
+                pass
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'macro_configs.json'
+            console = Cp1252Console()
+            with mock.patch('config_manager.ensure_user_config', return_value=path), mock.patch.object(
+                config_manager.sys, 'stdout', console
+            ):
+                config_manager.save_macros({'name': '测试'})
+
+            self.assertEqual(json.loads(path.read_text(encoding='utf-8')), {'name': '测试'})
+            self.assertFalse(Path(f'{path}.tmp').exists())
+            self.assertTrue(any('?' in message for message in console.messages))
+
     def test_save_json_replaces_file_atomically(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'macro_configs.json'

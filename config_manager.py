@@ -1,11 +1,22 @@
 import json
 import platform
+import sys
 from pathlib import Path
 from pynput.keyboard import Key
 from app_paths import ensure_user_config
 
 # 宏按键配置存储逻辑
 CONFIG_FILE = "macro_configs.json"
+
+
+def _print_console(message):
+    """Print a message without failing on consoles that cannot encode it."""
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        safe_message = message.encode(encoding, errors="replace").decode(encoding)
+        print(safe_message)
 
 
 def _load_json(filename, default=None):
@@ -32,7 +43,7 @@ def load_macros():
 
 def save_macros(data):
     _save_json(CONFIG_FILE, data)
-    print("宏按键配置已保存到服务端")
+    _print_console("宏按键配置已保存到服务端")
 
 GP_CONFIG_FILE = "gamepad_configs.json"
 
