@@ -28,7 +28,7 @@
 ## 🌟 项目亮点
 
 ### 1. 简单启动
-python一键启动，无需安装手机客户端。
+Windows 可直接安装 EXE，无需安装 Python 或手机客户端。安装后默认随当前用户登录自动启动，并驻留在系统托盘。
 
 ### 2. 触控操作
 
@@ -41,9 +41,29 @@ python一键启动，无需安装手机客户端。
 
 
 
-## 🛠️ 要求
+## 🪟 Windows 安装包
 
-* **Python 3.x**
+从 GitHub Releases 下载 `AirMouse-Setup-版本号-x64.exe` 后直接安装。安装器默认创建桌面快捷方式并启用开机自启动。
+
+> 当前安装包未进行 Authenticode 代码签名，Windows SmartScreen 可能显示“未知发布者”。
+
+首次启动时如 Windows 防火墙询问网络访问权限，请勾选“专用网络”并允许访问，否则手机可能无法连接电脑。
+
+托盘菜单支持打开控制中心、复制手机访问地址、切换开机自启动和退出程序。开机自启动使用普通用户权限；如需控制以管理员权限运行的程序，请先退出托盘中的 AirMouse，再右键快捷方式选择“以管理员身份运行”。
+
+### 本地构建安装包
+
+要求 Windows 10/11 x64、Python 3.11 和 Inno Setup 6：
+
+```bat
+scripts\build_windows.bat -Version 2.0.0
+```
+
+安装包和 SHA-256 校验文件会输出到 `release` 目录。推送 `v*` 标签时，GitHub Actions 也会自动构建并发布相同产物。
+
+## 🛠️ 源码运行要求
+
+* **Python 3.11**
 
 ## 🚀 快速启动
 > 1 安装python3.11 ， 2 双击直接启动 AirMouseserver.bat ，会自动检查依赖和启动服务器。  
@@ -51,7 +71,7 @@ python一键启动，无需安装手机客户端。
 
  **安装依赖**：
 ```bash
-pip install -r requirments.txt
+pip install -r requirements.txt
 ```
 
  **运行服务端**：
