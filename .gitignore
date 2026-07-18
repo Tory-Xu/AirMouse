@@ -1,0 +1,8 @@
+build/
+dist/
+release/
+.venv-build/
+__pycache__/
+*.py[cod]
+.DS_Store
+*.log

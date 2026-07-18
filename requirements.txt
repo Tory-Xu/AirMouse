@@ -1,0 +1,7 @@
+Flask>=3.0,<4
+Flask-SocketIO>=5.3,<6
+psutil>=5.9,<8
+pynput>=1.7,<2
+pyOpenSSL>=23,<27
+pystray>=0.19,<1
+Pillow>=10,<13

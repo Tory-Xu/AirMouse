@@ -1,6 +1,0 @@
-psutil
-flask
-flask-socketio
-pyautogui
-pynput
-pyopenssl
