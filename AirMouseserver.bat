@@ -1,7 +1,6 @@
 @echo off
 echo checking python dependencies...
-pip install flask flask-socketio pyOpenSSL pynput psutil 
 cd /d "%~dp0"
-start https://localhost:5888
-python server.py
+py -3.11 -m pip install -r requirements.txt
+py -3.11 server.py
 pause

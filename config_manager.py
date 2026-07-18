@@ -1,20 +1,37 @@
-import os
 import json
 import platform
+from pathlib import Path
 from pynput.keyboard import Key
+from app_paths import ensure_user_config
 
 # 宏按键配置存储逻辑
 CONFIG_FILE = "macro_configs.json"
 
+
+def _load_json(filename, default=None):
+    path = ensure_user_config(filename)
+    if not path.exists():
+        return default
+    try:
+        with path.open('r', encoding='utf-8') as file:
+            return json.load(file)
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
+def _save_json(filename, data):
+    path = ensure_user_config(filename)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(f"{path}.tmp")
+    with temporary.open('w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+    temporary.replace(path)
+
 def load_macros():
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return None
+    return _load_json(CONFIG_FILE)
 
 def save_macros(data):
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    _save_json(CONFIG_FILE, data)
     print("宏按键配置已保存到服务端")
 
 GP_CONFIG_FILE = "gamepad_configs.json"
@@ -24,17 +41,10 @@ def load_gp_macros():
         "current": "Default",
         "profiles": { "Default": {} }
     }
-    if os.path.exists(GP_CONFIG_FILE):
-        try:
-            with open(GP_CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return default_cfg
+    return _load_json(GP_CONFIG_FILE, default_cfg)
 
 def save_gp_macros(data):
-    with open(GP_CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    _save_json(GP_CONFIG_FILE, data)
 
 # 特殊按键映射表
 def get_special_keys():
