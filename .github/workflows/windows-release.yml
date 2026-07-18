@@ -1,0 +1,118 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Installer version
+        required: true
+        default: 2.0.0
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref }}" -like "refs/tags/v*") {
+            $version = "${{ github.ref_name }}".Substring(1)
+          } else {
+            $version = "${{ inputs.version }}"
+          }
+          "AIRMOUSE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: ./scripts/build_windows.ps1 -Version $env:AIRMOUSE_VERSION
+
+      - name: Run unit tests
+        shell: pwsh
+        run: ./.venv-build/Scripts/python.exe -m unittest discover -s tests -v
+
+      - name: Smoke test installer and application
+        shell: pwsh
+        run: |
+          $installer = Resolve-Path "release/AirMouse-Setup-$env:AIRMOUSE_VERSION-x64.exe"
+          $installProcess = Start-Process $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS=autostart' -Wait -PassThru
+          if ($installProcess.ExitCode -ne 0) {
+            throw "Installer failed with exit code $($installProcess.ExitCode)"
+          }
+
+          $app = Join-Path $env:LOCALAPPDATA 'Programs/AirMouse/AirMouse.exe'
+          if (-not (Test-Path $app)) {
+            throw "Installed executable was not found: $app"
+          }
+          $runValue = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run').AirMouse
+          if ($runValue -notlike '*AirMouse.exe*--autostart*') {
+            throw "Autostart registry value is invalid: $runValue"
+          }
+
+          $process = Start-Process $app -ArgumentList '--autostart' -PassThru
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              try {
+                $response = Invoke-WebRequest 'https://localhost:5888/' -SkipCertificateCheck -TimeoutSec 2
+                if ($response.StatusCode -eq 200 -and $response.Content -like '*AirMouse*') {
+                  $ready = $true
+                  break
+                }
+              } catch {
+                Start-Sleep -Milliseconds 500
+              }
+            }
+            if (-not $ready) {
+              throw 'Installed AirMouse did not become ready.'
+            }
+            $staticResponse = Invoke-WebRequest 'https://localhost:5888/static/touchpad.png' -SkipCertificateCheck -TimeoutSec 5
+            if ($staticResponse.StatusCode -ne 200) {
+              throw 'Packaged static resource is unavailable.'
+            }
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+
+          $uninstaller = Join-Path $env:LOCALAPPDATA 'Programs/AirMouse/unins000.exe'
+          $uninstallProcess = Start-Process $uninstaller -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          if ($uninstallProcess.ExitCode -ne 0) {
+            throw "Uninstaller failed with exit code $($uninstallProcess.ExitCode)"
+          }
+          $remaining = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).AirMouse
+          if ($remaining) {
+            throw 'Autostart registry value was not removed during uninstall.'
+          }
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AirMouse-Setup-${{ env.AIRMOUSE_VERSION }}-x64
+          path: |
+            release/AirMouse-Setup-${{ env.AIRMOUSE_VERSION }}-x64.exe
+            release/AirMouse-Setup-${{ env.AIRMOUSE_VERSION }}-x64.exe.sha256
+
+      - name: Attach files to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/AirMouse-Setup-${{ env.AIRMOUSE_VERSION }}-x64.exe
+            release/AirMouse-Setup-${{ env.AIRMOUSE_VERSION }}-x64.exe.sha256
