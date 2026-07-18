@@ -69,7 +69,13 @@ jobs:
           $process = Start-Process $app -ArgumentList '--autostart' -PassThru
           try {
             $ready = $false
+            $startupFailure = $null
             for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              $process.Refresh()
+              if ($process.HasExited) {
+                $startupFailure = "AirMouse exited before becoming ready (exit code $($process.ExitCode))."
+                break
+              }
               try {
                 $response = Invoke-WebRequest 'https://localhost:5888/' -SkipCertificateCheck -TimeoutSec 2
                 if ($response.StatusCode -eq 200 -and $response.Content -like '*AirMouse*') {
@@ -81,7 +87,28 @@ jobs:
               }
             }
             if (-not $ready) {
-              throw 'Installed AirMouse did not become ready.'
+              $process.Refresh()
+              $logPath = Join-Path $env:LOCALAPPDATA 'AirMouse/logs/AirMouse.log'
+              $installDir = Join-Path $env:LOCALAPPDATA 'Programs/AirMouse'
+              $diagnostics = @(
+                ($startupFailure ?? 'Installed AirMouse did not become ready within 30 seconds.'),
+                "Process ID: $($process.Id)",
+                "Process running: $(-not $process.HasExited)",
+                "Process exit code: $(if ($process.HasExited) { $process.ExitCode } else { 'n/a' })",
+                "Install directory exists: $(Test-Path $installDir)",
+                "Executable exists: $(Test-Path $app)",
+                "Certificate exists: $(Test-Path (Join-Path $installDir 'cert.pem'))",
+                "Private key exists: $(Test-Path (Join-Path $installDir 'key.pem'))",
+                "Templates directory exists: $(Test-Path (Join-Path $installDir 'templates'))",
+                "Static directory exists: $(Test-Path (Join-Path $installDir 'static'))"
+              )
+              if (Test-Path $logPath) {
+                $diagnostics += "Application log ($logPath):"
+                $diagnostics += Get-Content $logPath -Raw
+              } else {
+                $diagnostics += "Application log not found: $logPath"
+              }
+              throw ($diagnostics -join [Environment]::NewLine)
             }
             $staticResponse = Invoke-WebRequest 'https://localhost:5888/static/touchpad.png' -SkipCertificateCheck -TimeoutSec 5
             if ($staticResponse.StatusCode -ne 200) {
