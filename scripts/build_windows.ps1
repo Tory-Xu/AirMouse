@@ -121,8 +121,14 @@ if (-not $Iscc) {
 $SourceDir = Join-Path $Root "dist\AirMouse"
 $OutputDir = Join-Path $Root "release"
 & $Iscc "/DMyAppVersion=$Version" "/DSourceDir=$SourceDir" "/DOutputDir=$OutputDir" "/DIconFile=$IconPath" "packaging\installer.iss"
+if ($LASTEXITCODE -ne 0) {
+    throw "Inno Setup 编译失败，退出码：$LASTEXITCODE。"
+}
 
 $Installer = Join-Path $OutputDir "AirMouse-Setup-$Version-x64.exe"
+if (-not (Test-Path $Installer)) {
+    throw "Inno Setup 未生成安装包：$Installer"
+}
 Sign-File $Installer
 $Hash = (Get-FileHash $Installer -Algorithm SHA256).Hash.ToLowerInvariant()
 [System.IO.File]::WriteAllText("$Installer.sha256", "$Hash  $(Split-Path $Installer -Leaf)`n", $Utf8NoBom)
