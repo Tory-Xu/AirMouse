@@ -70,6 +70,7 @@ jobs:
           try {
             $ready = $false
             $startupFailure = $null
+            $controlUrl = 'https://127.0.0.1:5888/'
             for ($attempt = 0; $attempt -lt 60; $attempt++) {
               $process.Refresh()
               if ($process.HasExited) {
@@ -77,7 +78,7 @@ jobs:
                 break
               }
               try {
-                $response = Invoke-WebRequest 'https://localhost:5888/' -SkipCertificateCheck -TimeoutSec 2
+                $response = Invoke-WebRequest $controlUrl -SkipCertificateCheck -TimeoutSec 2
                 if ($response.StatusCode -eq 200 -and $response.Content -like '*AirMouse*') {
                   $ready = $true
                   break
@@ -90,17 +91,21 @@ jobs:
               $process.Refresh()
               $logPath = Join-Path $env:LOCALAPPDATA 'AirMouse/logs/AirMouse.log'
               $installDir = Join-Path $env:LOCALAPPDATA 'Programs/AirMouse'
+              $internalDir = Join-Path $installDir '_internal'
+              $resourceRoots = @($installDir, $internalDir)
               $diagnostics = @(
                 ($startupFailure ?? 'Installed AirMouse did not become ready within 30 seconds.'),
+                "Health check URL: $controlUrl",
                 "Process ID: $($process.Id)",
                 "Process running: $(-not $process.HasExited)",
                 "Process exit code: $(if ($process.HasExited) { $process.ExitCode } else { 'n/a' })",
                 "Install directory exists: $(Test-Path $installDir)",
                 "Executable exists: $(Test-Path $app)",
-                "Certificate exists: $(Test-Path (Join-Path $installDir 'cert.pem'))",
-                "Private key exists: $(Test-Path (Join-Path $installDir 'key.pem'))",
-                "Templates directory exists: $(Test-Path (Join-Path $installDir 'templates'))",
-                "Static directory exists: $(Test-Path (Join-Path $installDir 'static'))"
+                "Internal directory exists: $(Test-Path $internalDir)",
+                "Certificate exists: $(@($resourceRoots | ForEach-Object { Test-Path (Join-Path $_ 'cert.pem') }) -contains $true)",
+                "Private key exists: $(@($resourceRoots | ForEach-Object { Test-Path (Join-Path $_ 'key.pem') }) -contains $true)",
+                "Templates directory exists: $(@($resourceRoots | ForEach-Object { Test-Path (Join-Path $_ 'templates') }) -contains $true)",
+                "Static directory exists: $(@($resourceRoots | ForEach-Object { Test-Path (Join-Path $_ 'static') }) -contains $true)"
               )
               if (Test-Path $logPath) {
                 $diagnostics += "Application log ($logPath):"
@@ -110,7 +115,7 @@ jobs:
               }
               throw ($diagnostics -join [Environment]::NewLine)
             }
-            $staticResponse = Invoke-WebRequest 'https://localhost:5888/static/touchpad.png' -SkipCertificateCheck -TimeoutSec 5
+            $staticResponse = Invoke-WebRequest 'https://127.0.0.1:5888/static/touchpad.png' -SkipCertificateCheck -TimeoutSec 5
             if ($staticResponse.StatusCode -ne 200) {
               throw 'Packaged static resource is unavailable.'
             }
