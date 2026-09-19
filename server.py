@@ -24,7 +24,7 @@ if platform.system() == 'Darwin':
     except Exception:
         pass
 
-from web_app import app, socketio, get_all_ip_addresses
+from web_app import app, socketio, get_all_ip_addresses, PORT
 import config_manager
 import gamepad_service
 import keyboard_service
@@ -32,7 +32,6 @@ import mouse_service
 from single_instance import SingleInstance
 
 
-PORT = 5888
 CONTROL_URL = f"https://localhost:{PORT}/"
 LOGGER = logging.getLogger(__name__)
 
@@ -237,7 +236,15 @@ def on_scroll(data):
 
 @socketio.on('type_text')
 def on_type(data):
-    keyboard_service.handle_type_text(data)
+    if not isinstance(data, dict) or not isinstance(data.get('text'), str) or not data['text']:
+        return {'ok': False, 'message': '请输入要发送的文字。'}
+    try:
+        keyboard_service.handle_type_text(data)
+    except Exception as error:
+        # 不记录草稿或异常中的文字内容；系统调用失败前可能已输入一部分。
+        LOGGER.error('文字输入调用失败：%s', type(error).__name__)
+        return {'ok': False, 'message': '输入未完成，电脑可能已收到部分文字，请检查后再试。'}
+    return {'ok': True}
 
 
 @socketio.on('key_action')

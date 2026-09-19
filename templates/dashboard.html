@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -61,6 +61,115 @@
             letter-spacing: 1.5px;
             margin: 30px 0 16px;
             padding-left: 4px;
+        }
+
+        .connection-panel {
+            background: #16161f;
+            border: 1px solid #30303f;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .connection-panel summary {
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            min-height: 28px;
+        }
+
+        .connection-panel p {
+            color: #aaaabb;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .connection-content {
+            display: grid;
+            grid-template-columns: 208px minmax(0, 1fr);
+            align-items: center;
+            gap: 18px;
+            margin: 18px 0;
+        }
+
+        #connection-qr {
+            display: block;
+            width: 208px;
+            height: 208px;
+            max-width: 100%;
+            image-rendering: pixelated;
+            background: #fff;
+            border-radius: 8px;
+        }
+
+        .connection-fields {
+            min-width: 0;
+        }
+
+        .connection-fields label {
+            display: block;
+            color: #bbb;
+            font-size: 13px;
+            margin: 12px 0 8px;
+        }
+
+        .connection-fields select,
+        #connection-url {
+            width: 100%;
+            min-width: 0;
+            min-height: 44px;
+            border: 1px solid #454555;
+            border-radius: 8px;
+            background: #0a0a0f;
+            color: #fff;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        #connection-url {
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .connection-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .connection-actions button {
+            min-height: 44px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid #454555;
+            background: #292938;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #copy-address {
+            background: #007aff;
+            border-color: #007aff;
+        }
+
+        #connection-feedback {
+            min-height: 22px;
+            margin-bottom: 0;
+        }
+
+        .fixed-ip-guide {
+            border-top: 1px solid #30303f;
+            padding-top: 12px;
+        }
+
+        .fixed-ip-guide summary {
+            font-size: 14px;
+            color: #c2c2d3;
+        }
+
+        @media (max-width: 540px) {
+            .connection-content { grid-template-columns: minmax(0, 1fr); }
+            #connection-qr { margin: 0 auto; }
+            #connection-url { font-size: 16px; }
         }
 
         .card-grid {
@@ -170,6 +279,43 @@
             <p>远程控制中心</p>
         </div>
 
+        <details id="connection-panel" class="connection-panel" open>
+            <summary>手机扫码连接</summary>
+            <p>手机与电脑连接同一局域网，使用手机相机扫码打开控制中心。首次访问需在浏览器中信任本机的自签名证书。</p>
+            {% if connections %}
+            {% set selected = connections[selected_index] %}
+            <div class="connection-content">
+                <img id="connection-qr" src="{{ selected.qr }}" alt="手机访问地址二维码" width="208" height="208">
+                <div class="connection-fields">
+                    <label for="connection-interface">电脑网卡</label>
+                    <select id="connection-interface" {% if connections|length == 1 %}disabled{% endif %}>
+                        {% for connection in connections %}
+                        <option value="{{ connection.url }}" data-qr="{{ connection.qr }}" {% if loop.index0 == selected_index %}selected{% endif %}>{{ connection.interface }} · {{ connection.ip }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="connection-url">手机访问地址</label>
+                    <input id="connection-url" type="text" value="{{ selected.url }}" readonly spellcheck="false">
+                    <div class="connection-actions">
+                        <button id="copy-address" type="button">复制地址</button>
+                        <button class="refresh-addresses" type="button">刷新</button>
+                    </div>
+                    <p id="connection-feedback" role="status" aria-live="polite"></p>
+                </div>
+            </div>
+            <p>多网卡时，请选择与手机处于同一局域网的网卡。电脑 IP 变化后，点击“刷新”重新检测。</p>
+            {% else %}
+            <p id="connection-empty" role="status">未检测到可用的局域网 IPv4 地址。请连接 Wi-Fi 或网线，确认网卡已启用，然后刷新。</p>
+            <div class="connection-actions">
+                <button class="refresh-addresses" type="button">刷新</button>
+            </div>
+            {% endif %}
+            <details class="fixed-ip-guide">
+                <summary>让连接地址保持固定</summary>
+                <p>路由器管理页 → DHCP 地址保留 → 将电脑当前网卡 MAC 与 IP 绑定 → 保存并重新连接。</p>
+                <p>有线、无线网卡需要分别绑定。Wi-Fi 如启用了随机 MAC，请为当前网络保持固定的 MAC。AirMouse 只检测和展示地址，固定 IP 需在路由器中配置。</p>
+            </details>
+        </details>
+
         <div class="section-title">主要功能</div>
         <div class="card-grid">
             <div class="card large" onclick="v(); window.location.href='/touchpad'">
@@ -184,7 +330,7 @@
                 <div class="card-icon">⌨️</div>
                 <div class="card-content">
                     <div class="card-title">键盘</div>
-                    <div class="card-desc">全键盘输入</div>
+                    <div class="card-desc">手机输入法编辑文字 / 全键盘切换</div>
                 </div>
             </div>
 
@@ -226,9 +372,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/js/connection.js"></script>
     <script>
-        const socket = io();
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();

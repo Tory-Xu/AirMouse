@@ -48,6 +48,15 @@ jobs:
         shell: pwsh
         run: ./.venv-build/Scripts/python.exe -m unittest discover -s tests -v
 
+      - name: Set up Node for keyboard state tests
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Run keyboard input state tests
+        shell: pwsh
+        run: node --test tests/text_input.test.cjs
+
       - name: Smoke test installer and application
         shell: pwsh
         run: |
@@ -118,6 +127,26 @@ jobs:
             $staticResponse = Invoke-WebRequest 'https://127.0.0.1:5888/static/touchpad.png' -SkipCertificateCheck -TimeoutSec 5
             if ($staticResponse.StatusCode -ne 200) {
               throw 'Packaged static resource is unavailable.'
+            }
+            if ($response.Content -notmatch 'id="connection-qr"[^>]*src="data:image/png;base64,([A-Za-z0-9+/=]+)"') {
+              throw 'Packaged dashboard did not render a local QR code.'
+            }
+            $qrBytes = [Convert]::FromBase64String($Matches[1])
+            if ($qrBytes.Length -lt 8 -or [BitConverter]::ToString($qrBytes, 0, 8) -ne '89-50-4E-47-0D-0A-1A-0A') {
+              throw 'Packaged QR code is not a valid PNG.'
+            }
+            if ($response.Content -notmatch 'id="connection-url"[^>]*value="https://[0-9.]+:5888/"') {
+              throw 'Packaged dashboard did not render a LAN HTTPS address.'
+            }
+            $keyboardResponse = Invoke-WebRequest 'https://127.0.0.1:5888/k' -SkipCertificateCheck -TimeoutSec 5
+            if ($keyboardResponse.Content -notmatch '<textarea id="text-input"' -or $keyboardResponse.Content -notmatch 'class="text-mode"') {
+              throw 'Packaged keyboard did not render the default text editor.'
+            }
+            foreach ($script in @('connection.js', 'text-input.js', 'socket.io.min.js')) {
+              $scriptResponse = Invoke-WebRequest "https://127.0.0.1:5888/static/js/$script" -SkipCertificateCheck -TimeoutSec 5
+              if ($scriptResponse.StatusCode -ne 200 -or $scriptResponse.RawContentLength -eq 0) {
+                throw "Packaged keyboard script is unavailable: $script"
+              }
             }
           } finally {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue

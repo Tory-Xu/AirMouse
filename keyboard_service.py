@@ -6,14 +6,20 @@ from config_manager import get_special_keys
 
 keyboard = KeyController()
 active_repeats = {} # {key_code: stop_event}
+repeat_lock = threading.Lock()
 
 def repeat_key(key_obj, stop_event):
     """模拟系统自动重复按键的线程"""
-    keyboard.press(key_obj)
+    # 释放操作与重复线程共享锁，避免切换模式后迟到的线程再次按下按键。
+    with repeat_lock:
+        if stop_event.is_set(): return
+        keyboard.press(key_obj)
     if stop_event.wait(0.4): return
     
     while not stop_event.is_set():
-        keyboard.press(key_obj)
+        with repeat_lock:
+            if stop_event.is_set(): return
+            keyboard.press(key_obj)
         if stop_event.wait(0.05): break
 
 def handle_key_action(data):
@@ -23,18 +29,19 @@ def handle_key_action(data):
     
     target_key = special_keys.get(key_code, key_code)
 
-    if action == 'down':
-        if key_code in active_repeats:
-            return
-        stop_event = threading.Event()
-        active_repeats[key_code] = stop_event
-        threading.Thread(target=repeat_key, args=(target_key, stop_event), daemon=True).start()
-    else:
-        if key_code in active_repeats:
-            stop_event = active_repeats[key_code]
-            stop_event.set()
-            del active_repeats[key_code]
-        keyboard.release(target_key)
+    with repeat_lock:
+        if action == 'down':
+            if key_code in active_repeats:
+                return
+            stop_event = threading.Event()
+            active_repeats[key_code] = stop_event
+            threading.Thread(target=repeat_key, args=(target_key, stop_event), daemon=True).start()
+        else:
+            if key_code in active_repeats:
+                stop_event = active_repeats[key_code]
+                stop_event.set()
+                del active_repeats[key_code]
+            keyboard.release(target_key)
 
 def handle_type_text(data):
     keyboard.type(data['text'])
