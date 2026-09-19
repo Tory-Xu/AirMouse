@@ -240,6 +240,8 @@ def on_type(data):
         return {'ok': False, 'message': '请输入要发送的文字。'}
     try:
         keyboard_service.handle_type_text(data)
+    except keyboard_service.windows_text_input.InputBusyError:
+        return {'ok': False, 'message': '请先释放远程按键及电脑上的 Shift、Ctrl、Alt、Win 键，再重试发送。'}
     except Exception as error:
         # 不记录草稿或异常中的文字内容；系统调用失败前可能已输入一部分。
         LOGGER.error('文字输入调用失败：%s', type(error).__name__)

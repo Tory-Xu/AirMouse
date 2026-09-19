@@ -1,12 +1,23 @@
 import time
 import threading
 import platform
+from functools import wraps
+import windows_text_input
 from pynput.keyboard import Controller as KeyController, Key, KeyCode
 from config_manager import get_special_keys
 
 keyboard = KeyController()
 active_repeats = {} # {key_code: stop_event}
-repeat_lock = threading.Lock()
+input_lock = threading.RLock()
+repeat_lock = input_lock
+
+
+def serialized_input(function):
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        with input_lock:
+            return function(*args, **kwargs)
+    return wrapped
 
 def repeat_key(key_obj, stop_event):
     """模拟系统自动重复按键的线程"""
@@ -43,9 +54,16 @@ def handle_key_action(data):
                 del active_repeats[key_code]
             keyboard.release(target_key)
 
+@serialized_input
 def handle_type_text(data):
-    keyboard.type(data['text'])
+    if platform.system() == 'Windows':
+        if active_repeats:
+            raise windows_text_input.InputBusyError()
+        windows_text_input.type_text(data['text'])
+    else:
+        keyboard.type(data['text'])
 
+@serialized_input
 def handle_clear_text():
     """在当前焦点全选并删除；组合键完全释放后才执行退格。"""
     modifier = Key.cmd if platform.system() == 'Darwin' else Key.ctrl
@@ -75,6 +93,7 @@ def handle_clear_text():
         if release_error is not None:
             raise release_error
 
+@serialized_input
 def handle_combo(data):
     keys = data['keys']
     if not keys: return

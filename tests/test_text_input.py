@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+import threading
 import unittest
 from unittest import mock
 
@@ -6,6 +9,9 @@ import server
 
 class TextInputTests(unittest.TestCase):
     def setUp(self):
+        system = mock.patch('keyboard_service.platform.system', return_value='Linux')
+        system.start()
+        self.addCleanup(system.stop)
         self.client = server.socketio.test_client(server.app)
         self.addCleanup(self.client.disconnect)
         controller = mock.patch.object(server.keyboard_service, 'keyboard')
@@ -17,6 +23,63 @@ class TextInputTests(unittest.TestCase):
         reply = self.client.emit('type_text', {'text': text}, callback=True)
         self.keyboard.type.assert_called_once_with(text)
         self.assertEqual(reply, {'ok': True})
+
+    def test_url_payload_is_preserved(self):
+        text = json.loads((Path(__file__).parent / 'text_samples.json').read_text(encoding='utf-8'))['url']
+        self.assertEqual(self.client.emit('type_text', {'text': text}, callback=True), {'ok': True})
+        self.keyboard.type.assert_called_once_with(text)
+
+    def test_windows_route_busy_and_failed_submission(self):
+        service = server.keyboard_service
+        with mock.patch('keyboard_service.platform.system', return_value='Windows'), mock.patch.object(service.windows_text_input, 'type_text') as send:
+            text = json.loads((Path(__file__).parent / 'text_samples.json').read_text(encoding='utf-8'))['url']
+            self.assertEqual(self.client.emit('type_text', {'text': text}, callback=True), {'ok': True})
+            send.assert_called_once_with(text)
+            self.keyboard.type.assert_not_called()
+            for error in (service.windows_text_input.InputBusyError(), OSError()):
+                send.side_effect = error
+                reply = self.client.emit('type_text', {'text': text}, callback=True)
+                self.assertFalse(reply['ok'])
+                self.assertIn('释放' if isinstance(error, service.windows_text_input.InputBusyError) else '部分文字', reply['message'])
+            send.reset_mock()
+            service.active_repeats['a'] = threading.Event()
+            try:
+                reply = self.client.emit('type_text', {'text': text}, callback=True)
+                self.assertFalse(reply['ok'])
+                send.assert_not_called()
+            finally:
+                service.active_repeats.clear()
+
+    def test_text_holds_lock_against_clear_combo_and_repeat(self):
+        service = server.keyboard_service
+        repeat_stop = threading.Event()
+        for operation in (service.handle_clear_text,
+                          lambda: service.handle_combo({'keys': ['a']}),
+                          lambda: service.repeat_key('a', repeat_stop)):
+            with self.subTest(operation=operation), mock.patch('keyboard_service.time.sleep'), mock.patch('keyboard_service.get_special_keys', return_value={}):
+                entered = threading.Event()
+                finish = threading.Event()
+                attempted = threading.Event()
+                def send(text):
+                    entered.set()
+                    self.assertTrue(finish.wait(3))
+                self.keyboard.type.side_effect = send
+                self.keyboard.press.side_effect = lambda key: attempted.set()
+                sender = threading.Thread(target=service.handle_type_text, args=({'text': 'a'},))
+                sender.start()
+                self.assertTrue(entered.wait(3))
+                contender = threading.Thread(target=operation, daemon=True)
+                contender.start()
+                try:
+                    self.assertFalse(attempted.wait(0.05))
+                finally:
+                    finish.set()
+                    sender.join(3)
+                self.assertTrue(attempted.wait(3))
+                repeat_stop.set()
+                contender.join(3)
+                repeat_stop.clear()
+                self.assertFalse(contender.is_alive())
 
     def test_whitespace_only_text_is_not_trimmed(self):
         reply = self.client.emit('type_text', {'text': ' \n\t '}, callback=True)

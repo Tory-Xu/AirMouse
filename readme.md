@@ -104,6 +104,10 @@ python server.py
 
 收到成功回执后清空已发送的草稿，并显示“最近发送”。等待回执期间继续编辑的新草稿会保留。回执表示系统输入调用完成，不能保证目标应用接收了全部内容；文字会输入到电脑当前获得焦点的控件。
 
+Windows 文字发送通过 `SendInput` 的 Unicode 事件传递确定的字符，支持中文和 emoji，不使用剪贴板，也不转换 URL、裁剪空白或改变大小写。换行和制表符仍执行 Enter、Tab，CRLF 只执行一次 Enter；目标应用可能因此提交表单或切换焦点。macOS/Linux 保持原有输入实现。
+
+文字发送、清空、组合键和重复按键共用输入锁。Windows 发送时若远程按键或电脑的 Shift、Ctrl、Alt、Win 仍按住，会提示释放后重试，不强行释放实体键盘。系统拒绝全部或部分事件时返回失败，不自动重发或退回旧路径。成功仅表示系统接受输入事件；权限高于 AirMouse 的窗口可能拒绝输入，详见 [SendInput 文档](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)。
+
 “清空”会在电脑当前焦点位置执行全选后退格（macOS 使用 Command+A，Windows/Linux 使用 Ctrl+A），请先在电脑上选中需要清空的输入框。成功回执后清空当前页面的草稿和最近发送内容，等待期间修改的新草稿会保留；网页为空时也能清空电脑。发送和清空不能同时进行，输入法选词或断线时不能清空。清空沿用 5 秒超时，失败、超时或断线时保留网页内容，不自动重试，迟到回执不会修改网页内容。成功回执仅表示按键调用完成，并未读取或验证目标输入框。
 
 发送期间不接受重复提交。5 秒未收到有效回执或连接中断时，会保留草稿并提示“结果未确认”，不会自动重发或在重连后补发。请先检查电脑上的内容，再决定是否手动重发，避免重复输入。输入调用失败也可能已输入部分内容。
@@ -122,6 +126,24 @@ node --test tests/text_input.test.cjs
 前端状态测试使用 Node.js 22 或更新版本，无需安装 npm 依赖。Windows 发布工作流使用 Python 3.11，除安装、启动和卸载外，还检查打包后的首页 PNG 二维码、键盘页和本地脚本资源。
 
 真机回归时，在 Android Chrome 和 iOS Safari 分别检查拼音选词、文字修改与粘贴、系统键盘弹出、横竖屏切换、全键盘长按后切换模式，以及断线和超时后的草稿保留。
+
+#### Windows 文本一致性验收
+
+`tests/text_samples.json` 保存前端、服务端和 Windows 编码测试共用的示例 URL。当前上下文未提供原始故障 URL；拿到后应将该字段替换为原文再运行测试。
+
+<!-- // TODO: tory {#补充原始故障 URL，并完成 Windows 浏览器、记事本实机矩阵验收#} -->
+
+在 Windows 10/11 已登录且未锁屏的桌面，运行以下 PowerShell 命令。测试会创建并聚焦专用 Win32 文本框，实际发送 URL 20 次及中文、emoji、空白、换行、Tab，并读取控件内容逐字比对；运行时不要操作键盘或切换焦点。普通单元测试默认跳过此项。
+
+```powershell
+$env:AIRMOUSE_WINDOWS_INPUT_TEST = '1'
+python -m unittest discover -s tests -p test_windows_text_integration.py -v
+Remove-Item Env:AIRMOUSE_WINDOWS_INPUT_TEST
+```
+
+再通过手机页面向浏览器输入框与记事本分别发送共用 URL：英文输入、中文输入法开启两种模式，各覆盖 Caps Lock 开、关，共 8 组；每组连续发送 20 次，每次清空目标后发送并逐字比对，要求完全一致。记录 Windows 版本、浏览器版本、输入法名称及结果。同时检查按住远程键或实体修饰键时拒绝发送，释放后恢复；不要把成功回执当作内容比对结果。
+
+当前开发环境为 macOS，Windows 控件集成测试和上述浏览器、记事本矩阵尚待 Windows 实机执行。
 
 ---
 

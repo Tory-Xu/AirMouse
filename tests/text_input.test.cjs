@@ -303,3 +303,13 @@ test('missing or malformed acknowledgements never report success', () => {
         assert.equal(page.status.dataset.kind, 'unconfirmed');
     }
 });
+
+test('URL content and order survive the frontend request and acknowledgement', () => {
+    const text = require('./text_samples.json').url;
+    const page = editor();
+    page.edit(text);
+    page.submit();
+    assert.deepEqual(page.calls[0].payload, { text });
+    page.calls[0].reply(null, { ok: true });
+    assert.equal(page.get('last-sent-text').textContent, text);
+});
