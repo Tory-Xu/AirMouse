@@ -36,6 +36,7 @@ function editor() {
         },
         compose(type) { get('text-input').dispatchEvent(new Event(type)); },
         submit() { get('text-form').dispatchEvent(new Event('submit', { cancelable: true })); },
+        clear() { get('clear-text').dispatchEvent(new Event('click')); },
         connection(connected) {
             socket.connected = connected;
             listeners.get(connected ? 'connect' : 'disconnect')();
@@ -59,6 +60,123 @@ test('Chinese, English, emoji and whitespace stay in the draft until a successfu
     assert.equal(page.get('last-sent-text').textContent, text);
     assert.equal(page.get('recent-text').hidden, false);
     assert.equal(page.status.dataset.kind, 'success');
+});
+
+function withRecent() {
+    const page = editor();
+    page.edit('上次发送');
+    page.submit();
+    page.calls[0].reply(null, { ok: true });
+    page.edit('待清空草稿');
+    return page;
+}
+
+test('clear removes draft and recent text only after success, with a volatile five-second request', () => {
+    const page = withRecent();
+    page.clear();
+    const request = page.calls[1];
+    assert.equal(request.name, 'clear_text');
+    assert.deepEqual(request.payload, {});
+    assert.equal(request.timeout, 5000);
+    assert.equal(request.volatile, true);
+    assert.equal(page.input.value, '待清空草稿');
+    assert.equal(page.get('last-sent-text').textContent, '上次发送');
+    assert.equal(page.button.disabled, true);
+    assert.equal(page.get('clear-text').disabled, true);
+    assert.equal(page.get('clear-text').textContent, '清空中…');
+    request.reply(null, { ok: true });
+    assert.equal(page.input.value, '');
+    assert.equal(page.get('last-sent-text').textContent, '');
+    assert.equal(page.get('recent-text').hidden, true);
+    assert.equal(page.get('clear-text').disabled, false);
+    assert.equal(page.status.dataset.kind, 'success');
+});
+
+test('clear works with an empty page and blocks repeated clears and sends', () => {
+    const page = editor();
+    assert.equal(page.get('clear-text').disabled, false);
+    page.clear();
+    page.clear();
+    page.edit('新草稿');
+    page.submit();
+    assert.equal(page.calls.length, 1);
+    page.calls[0].reply(null, { ok: true });
+    assert.equal(page.input.value, '新草稿');
+});
+
+test('clear is blocked during send, IME composition and disconnection', () => {
+    const page = editor();
+    page.compose('compositionstart');
+    assert.equal(page.get('clear-text').disabled, true);
+    page.clear();
+    assert.equal(page.calls.length, 0);
+    page.compose('compositionend');
+    page.edit('发送');
+    page.submit();
+    page.clear();
+    assert.equal(page.calls.length, 1);
+    page.calls[0].reply(null, { ok: true });
+    page.connection(false);
+    assert.equal(page.get('clear-text').disabled, true);
+    page.clear();
+    page.connection(true);
+    assert.equal(page.calls.length, 1);
+    assert.equal(page.get('clear-text').disabled, false);
+});
+
+test('clear success preserves edits, including an edit restored to the original value, and IME composition', () => {
+    for (const change of ['edited', 'restored', 'composing']) {
+        const page = withRecent();
+        page.clear();
+        if (change === 'composing') page.compose('compositionstart');
+        else {
+            page.edit('新草稿');
+            if (change === 'restored') page.edit('待清空草稿');
+        }
+        const draft = page.input.value;
+        page.calls[1].reply(null, { ok: true });
+        assert.equal(page.input.value, draft);
+        assert.equal(page.get('last-sent-text').textContent, '');
+        assert.equal(page.get('recent-text').hidden, true);
+    }
+});
+
+test('failed or invalid clear replies retain all page content', () => {
+    for (const reply of [{ ok: false, message: '清空失败' }, { ok: false }, undefined, null, {}, { ok: 'true' }]) {
+        const page = withRecent();
+        page.clear();
+        page.calls[1].reply(null, reply);
+        assert.equal(page.input.value, '待清空草稿');
+        assert.equal(page.get('last-sent-text').textContent, '上次发送');
+        assert.equal(page.get('recent-text').hidden, false);
+        assert.notEqual(page.status.dataset.kind, 'success');
+        assert.equal(page.get('clear-text').disabled, false);
+    }
+});
+
+test('clear timeout or disconnect preserves content, never retries, and ignores late replies during a new send', () => {
+    for (const failure of ['timeout', 'disconnect']) {
+        const page = withRecent();
+        page.clear();
+        if (failure === 'timeout') page.calls[1].reply(new Error('timeout'));
+        else page.connection(false);
+        assert.equal(page.input.value, '待清空草稿');
+        assert.equal(page.get('last-sent-text').textContent, '上次发送');
+        assert.equal(page.get('recent-text').hidden, false);
+        assert.equal(page.status.dataset.kind, 'unconfirmed');
+        page.connection(true);
+        assert.equal(page.calls.length, 2);
+        page.calls[1].reply(null, { ok: true });
+        assert.equal(page.input.value, '待清空草稿');
+        page.edit('新发送');
+        page.submit();
+        page.calls[1].reply(null, { ok: true });
+        assert.equal(page.input.value, '新发送');
+        assert.equal(page.get('last-sent-text').textContent, '上次发送');
+        assert.equal(page.button.disabled, true);
+        page.calls[2].reply(null, { ok: true });
+        assert.equal(page.get('last-sent-text').textContent, '新发送');
+    }
 });
 
 test('IME composition cannot submit before the user finishes selecting a word', () => {

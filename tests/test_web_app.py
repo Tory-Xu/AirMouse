@@ -144,6 +144,8 @@ class WebAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             page = PageElements(response.get_data(as_text=True))
         self.assertIn('text-input', page.by_id)
+        self.assertEqual(page.by_id['clear-text']['type'], 'button')
+        self.assertEqual(page.by_id['clear-text']['aria-describedby'], 'clear-hint')
         self.assertEqual(page.by_id['text-mode-button']['aria-pressed'], 'true')
         self.assertIn('hidden', page.by_id['full-keyboard'])
         for script in ('connection.js', 'text-input.js', 'socket.io.min.js'):

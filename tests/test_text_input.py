@@ -55,6 +55,51 @@ class TextInputTests(unittest.TestCase):
         self.keyboard.release.assert_called_once_with('a')
         self.assertNotIn('a', server.keyboard_service.active_repeats)
 
+    def test_clear_ack_and_platform_key_order(self):
+        key = server.keyboard_service.Key
+        for system, modifier in [('Darwin', key.cmd), ('Windows', key.ctrl), ('Linux', key.ctrl)]:
+            with self.subTest(system=system), mock.patch('keyboard_service.platform.system', return_value=system), mock.patch('keyboard_service.time.sleep'):
+                self.keyboard.reset_mock()
+                reply = self.client.emit('clear_text', {}, callback=True)
+                self.assertEqual(reply, {'ok': True})
+                self.assertEqual(self.keyboard.mock_calls, [
+                    mock.call.press(modifier), mock.call.press('a'),
+                    mock.call.release('a'), mock.call.release(modifier),
+                    mock.call.press(key.backspace), mock.call.release(key.backspace),
+                ])
+
+    def test_clear_failure_releases_keys_and_returns_failure_ack(self):
+        key = server.keyboard_service.Key
+        for failure_at in range(6):
+            with self.subTest(failure_at=failure_at), mock.patch('keyboard_service.platform.system', return_value='Darwin'), mock.patch('keyboard_service.time.sleep'):
+                self.keyboard.reset_mock()
+                events = []
+                def action(kind, target):
+                    events.append((kind, target))
+                    if len(events) == failure_at + 1:
+                        raise RuntimeError('private error')
+                self.keyboard.press.side_effect = lambda target: action('press', target)
+                self.keyboard.release.side_effect = lambda target: action('release', target)
+                with self.assertLogs('server', level='ERROR') as logs:
+                    reply = self.client.emit('clear_text', {}, callback=True)
+                self.assertFalse(reply['ok'])
+                self.assertTrue(reply['message'])
+                self.assertNotIn('private error', '\n'.join(logs.output))
+                for index, (kind, target) in enumerate(events):
+                    if kind == 'press':
+                        self.assertIn(('release', target), events[index + 1:])
+                if failure_at < 4:
+                    self.assertNotIn(('press', key.backspace), events)
+
+    def test_clear_cleanup_continues_if_one_release_fails(self):
+        key = server.keyboard_service.Key
+        self.keyboard.press.side_effect = [None, RuntimeError('press failed')]
+        self.keyboard.release.side_effect = [RuntimeError('release failed'), None]
+        with mock.patch('keyboard_service.platform.system', return_value='Darwin'), mock.patch('keyboard_service.time.sleep'), self.assertLogs('server', level='ERROR'):
+            reply = self.client.emit('clear_text', {}, callback=True)
+        self.assertFalse(reply['ok'])
+        self.assertEqual(self.keyboard.release.call_args_list, [mock.call('a'), mock.call(key.cmd)])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -247,6 +247,16 @@ def on_type(data):
     return {'ok': True}
 
 
+@socketio.on('clear_text')
+def on_clear_text(data=None):
+    try:
+        keyboard_service.handle_clear_text()
+    except Exception as error:
+        LOGGER.error('文字清空调用失败：%s', type(error).__name__)
+        return {'ok': False, 'message': '清空未完成，请检查电脑内容后再试。网页内容已保留。'}
+    return {'ok': True}
+
+
 @socketio.on('key_action')
 def on_key(data):
     keyboard_service.handle_key_action(data)

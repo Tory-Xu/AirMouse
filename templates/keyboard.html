@@ -165,6 +165,7 @@
         #text-form label { font-size: 14px; color: #ddd; }
         .send-actions {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
@@ -174,6 +175,8 @@
             background: #111;
         }
         #composition-hint { font-size: 13px; color: #aaaabb; }
+        .text-buttons { display: flex; gap: 8px; margin-left: auto; }
+        .text-buttons button { flex: 0 0 auto; padding: 10px 16px; white-space: nowrap; }
         #send-status { margin: 10px 0 0; min-height: 23px; }
         #send-status[data-kind="error"], #send-status[data-kind="unconfirmed"] { color: #ffbd78; }
         #send-status[data-kind="success"] { color: #6edc91; }
@@ -388,12 +391,16 @@
                 <span id="text-connection" role="status">正在连接…</span>
             </div>
             <p class="text-hint">先在电脑上点选输入位置，再用手机输入法选词、修改或粘贴文字。</p>
+            <p class="text-hint" id="clear-hint">清空前请先在电脑上选中需要清空的输入框；点击后将全选并删除其中全部内容，同时清空当前页面的草稿和最近发送内容。</p>
             <form id="text-form">
                 <label for="text-input">待发送文字</label>
                 <textarea id="text-input" rows="5" placeholder="在这里输入或粘贴文字…" enterkeyhint="enter" autocomplete="off"></textarea>
                 <div class="send-actions">
                     <span id="composition-hint">支持多行，保留空格和换行</span>
-                    <button id="send-text" type="submit" class="send-btn" disabled>发送到电脑</button>
+                    <div class="text-buttons">
+                        <button id="send-text" type="submit" class="send-btn" disabled>发送到电脑</button>
+                        <button id="clear-text" type="button" aria-describedby="clear-hint" disabled>清空</button>
+                    </div>
                 </div>
             </form>
             <p id="send-status" role="status" aria-live="polite">草稿和最近发送内容仅保存在当前页面。</p>

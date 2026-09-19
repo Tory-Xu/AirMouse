@@ -46,6 +46,35 @@ def handle_key_action(data):
 def handle_type_text(data):
     keyboard.type(data['text'])
 
+def handle_clear_text():
+    """在当前焦点全选并删除；组合键完全释放后才执行退格。"""
+    modifier = Key.cmd if platform.system() == 'Darwin' else Key.ctrl
+    pressed = []
+    try:
+        for target in (modifier, 'a'):
+            # press 抛错时也可能已产生按键事件，因此提前登记以便释放。
+            pressed.append(target)
+            keyboard.press(target)
+            time.sleep(0.05)
+        for target in reversed(pressed[:]):
+            keyboard.release(target)
+            pressed.remove(target)
+        time.sleep(0.05)
+        pressed.append(Key.backspace)
+        keyboard.press(Key.backspace)
+        keyboard.release(Key.backspace)
+        pressed.remove(Key.backspace)
+    finally:
+        release_error = None
+        for target in reversed(pressed):
+            try:
+                keyboard.release(target)
+            except Exception as error:
+                # 一个键释放失败也必须继续释放剩余按键。
+                release_error = error
+        if release_error is not None:
+            raise release_error
+
 def handle_combo(data):
     keys = data['keys']
     if not keys: return
